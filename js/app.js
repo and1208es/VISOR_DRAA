@@ -83,7 +83,6 @@ document.addEventListener("DOMContentLoaded", async () => {
   populateFilterOptions(APP_STATE.allProjects, APP_STATE.boundaryCatalog);
   bindScrollableFilterSelects();
   bindFilterEvents();
-  bindExportActions();
   bindProvinceProjectsPanel();
   bindLayerToggles();
 
@@ -95,37 +94,6 @@ document.addEventListener("DOMContentLoaded", async () => {
 });
 
 function bindMapAndLayerEvents() {}
-
-function downloadGeoJSON(featureCollection, fileName) {
-  const safeCollection = featureCollection || { type: "FeatureCollection", features: [] };
-  const blob = new Blob([JSON.stringify(safeCollection, null, 2)], {
-    type: "application/geo+json;charset=utf-8"
-  });
-  const url = URL.createObjectURL(blob);
-  const link = document.createElement("a");
-  link.href = url;
-  link.download = fileName;
-  document.body.appendChild(link);
-  link.click();
-  link.remove();
-  URL.revokeObjectURL(url);
-}
-
-function bindExportActions() {
-  document.getElementById("btn-export-proyectos")?.addEventListener("click", () => {
-    downloadGeoJSON(APP_STATE.filteredProjects, "proyectos.geojson");
-  });
-
-  document.getElementById("btn-export-provincias")?.addEventListener("click", () => {
-    const boundaries = APP_STATE.getBoundaryGeoJSON?.() || {};
-    downloadGeoJSON(boundaries.provincias, "provincias.geojson");
-  });
-
-  document.getElementById("btn-export-distritos")?.addEventListener("click", () => {
-    const boundaries = APP_STATE.getBoundaryGeoJSON?.() || {};
-    downloadGeoJSON(boundaries.distritos, "distritos.geojson");
-  });
-}
 
 function bindLayerToggles() {
   document.querySelectorAll(".layer-toggle").forEach((checkbox) => {

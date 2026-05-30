@@ -272,26 +272,6 @@ body {
   border-color: #2f7d4f;
 }
 
-.export-actions {
-  margin-top: 0.7rem;
-  padding-top: 0.65rem;
-  border-top: 1px solid #dbeadf;
-}
-
-.export-actions-title {
-  margin: 0 0 0.45rem;
-  font-family: "Montserrat", sans-serif;
-  font-size: 0.74rem;
-  letter-spacing: 0.05em;
-  text-transform: uppercase;
-  color: #2b6d49;
-}
-
-.export-actions .btn {
-  border-radius: 8px;
-  font-weight: 700;
-}
-
 
 .province-project-panel {
   position: absolute;
