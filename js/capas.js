@@ -295,10 +295,37 @@ export async function initCapas({ config, map, popupBuilder }) {
     projectLayer.bringToFront();
   } catch (boundaryError) {
     console.warn("No se pudo cargar provincias/distritos en WFS. Se usara WMS.", boundaryError);
-    wmsProvincias.addTo(map);
-    wmsDistritos.addTo(map);
-    provincesLayer = wmsProvincias;
-    districtsLayer = wmsDistritos;
+
+    try {
+      const [provincesFallback, districtsFallback] = await Promise.all([
+        fetchGeoJSON("./data/provincias.geojson"),
+        fetchGeoJSON("./data/distritos.geojson")
+      ]);
+
+      provincesGeoJSON = provincesFallback;
+      districtsGeoJSON = districtsFallback;
+
+      provincesLayer = L.geoJSON(provincesFallback, {
+        pane: "boundariesPane",
+        style: provinceStyle,
+        interactive: false
+      }).addTo(map);
+
+      districtsLayer = L.geoJSON(districtsFallback, {
+        pane: "boundariesPane",
+        style: districtStyle,
+        interactive: false
+      }).addTo(map);
+
+      projectLayer.bringToFront();
+      console.info("[Fallback] Se cargaron provincias y distritos desde archivos GeoJSON locales.");
+    } catch (boundaryFallbackError) {
+      console.warn("No se pudo cargar fallback local de provincias/distritos. Se intentara WMS.", boundaryFallbackError);
+      wmsProvincias.addTo(map);
+      wmsDistritos.addTo(map);
+      provincesLayer = wmsProvincias;
+      districtsLayer = wmsDistritos;
+    }
   }
 
   async function refreshProjects({ fitToData = false, allowFallback = true } = {}) {
