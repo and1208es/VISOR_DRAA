@@ -1,0 +1,171 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Visor institucional de proyectos de la Direccion Regional de Agricultura de Ayacucho">
+  <title>Visor de proyectos DRA - Ayacucho</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800&family=Source+Sans+3:wght@400;600;700&display=swap" rel="stylesheet">
+
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet-search@3.0.9/dist/leaflet-search.min.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css">
+
+  <link rel="stylesheet" href="css/estilos.css">
+  <link rel="stylesheet" href="css/responsive.css">
+</head>
+<body>
+  <div class="app-shell">
+    <header class="topbar navbar navbar-expand-lg navbar-dark">
+      <div class="container-fluid px-3">
+        <button class="btn btn-outline-light d-lg-none me-2" type="button" data-bs-toggle="offcanvas" data-bs-target="#sidebar" aria-controls="sidebar">
+          Panel
+        </button>
+        <a class="navbar-brand d-flex align-items-center gap-2" href="#">
+          <span class="brand-badge" aria-hidden="true">
+            <img src="assets/img/logo_draa.jpg" alt="Logo DRAA" class="brand-logo">
+          </span>
+          <span class="brand-text">Visor de proyectos DRA - Ayacucho</span>
+        </a>
+        <div class="d-flex align-items-center gap-2 text-light small">
+          <span id="fecha-actual" class="date-pill"></span>
+        </div>
+      </div>
+    </header>
+
+    <main class="main-layout">
+      <aside class="sidebar offcanvas-lg offcanvas-start" tabindex="-1" id="sidebar" aria-labelledby="sidebarLabel">
+        <div class="offcanvas-header d-lg-none">
+          <h5 class="offcanvas-title" id="sidebarLabel">Panel SIG</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+        </div>
+
+        <div class="sidebar-content">
+          <section class="panel-block panel-capas">
+            <h2 class="panel-title">Capas</h2>
+            <div class="form-check">
+              <input class="form-check-input layer-toggle" type="checkbox" id="lyr-provincias" data-layer="provincias" checked>
+              <label class="form-check-label layer-label" for="lyr-provincias">
+                <span>Provincias</span>
+                <span class="layer-color-chip layer-color-provincias" aria-hidden="true"></span>
+              </label>
+            </div>
+            <div class="form-check">
+              <input class="form-check-input layer-toggle" type="checkbox" id="lyr-distritos" data-layer="distritos" checked>
+              <label class="form-check-label layer-label" for="lyr-distritos">
+                <span>Distritos</span>
+                <span class="layer-color-chip layer-color-distritos" aria-hidden="true"></span>
+              </label>
+            </div>
+            <div class="form-check">
+              <input class="form-check-input layer-toggle" type="checkbox" id="lyr-proyectos" data-layer="proyectos" checked>
+              <label class="form-check-label layer-label" for="lyr-proyectos">
+                <span>Proyectos productivos</span>
+                <span class="layer-color-chip layer-color-proyectos" aria-hidden="true"></span>
+              </label>
+            </div>
+          </section>
+
+          <section class="panel-block panel-filtros">
+            <h2 class="panel-title">Filtros</h2>
+            <div class="mb-2">
+              <label for="filtro-provincia" class="form-label">Provincia</label>
+              <select id="filtro-provincia" class="form-select form-select-sm">
+                <option value="">Todas</option>
+              </select>
+            </div>
+            <div class="mb-2">
+              <label for="filtro-distrito" class="form-label">Distrito</label>
+              <select id="filtro-distrito" class="form-select form-select-sm">
+                <option value="">Todos</option>
+              </select>
+            </div>
+            <div class="mb-2">
+              <label for="filtro-estado" class="form-label">Estado</label>
+              <select id="filtro-estado" class="form-select form-select-sm">
+                <option value="">Todos</option>
+                <option value="En ejecucion">En ejecucion</option>
+                <option value="Finalizado">Finalizado</option>
+                <option value="Planificado">Planificado</option>
+              </select>
+            </div>
+            <div class="mb-3">
+              <label for="filtro-proyecto" class="form-label">Proyecto</label>
+              <select id="filtro-proyecto" class="form-select form-select-sm">
+                <option value="">Todos</option>
+              </select>
+            </div>
+            <div class="d-grid gap-2 filter-actions">
+              <button id="btn-aplicar-filtros" class="btn btn-success btn-sm">Aplicar filtros</button>
+              <button id="btn-limpiar-filtros" class="btn btn-outline-secondary btn-sm">Limpiar filtros</button>
+            </div>
+
+            <div class="export-actions" aria-label="Exportacion de capas">
+              <p class="export-actions-title">Exportar GeoJSON</p>
+              <div class="d-grid gap-2">
+                <button id="btn-export-proyectos" class="btn btn-outline-success btn-sm" type="button">Proyectos (vista actual)</button>
+                <button id="btn-export-provincias" class="btn btn-outline-success btn-sm" type="button">Provincias</button>
+                <button id="btn-export-distritos" class="btn btn-outline-success btn-sm" type="button">Distritos</button>
+              </div>
+            </div>
+          </section>
+
+        </div>
+      </aside>
+
+      <section class="content-area">
+        <div class="map-wrapper">
+          <div id="map" aria-label="Mapa interactivo del geoportal"></div>
+
+          <section id="province-project-panel" class="province-project-panel is-hidden" aria-label="Lista de proyectos por provincia">
+            <header class="province-panel-header">
+              <div class="province-panel-actions">
+                <button id="btn-panel-minimize" type="button" class="btn btn-sm panel-btn panel-btn-minimize" aria-label="Minimizar panel" title="Minimizar panel">
+                  <span class="panel-btn-icon" aria-hidden="true">-</span>
+                </button>
+                <button id="btn-panel-close" type="button" class="btn btn-sm panel-btn panel-btn-close" aria-label="Cerrar panel" title="Cerrar panel">
+                  <span class="panel-btn-icon" aria-hidden="true">x</span>
+                </button>
+              </div>
+              <div class="province-panel-heading">
+                <h3 id="province-panel-title" class="province-panel-title">Proyectos en provincia</h3>
+                <p id="province-panel-subtitle" class="province-panel-subtitle">Seleccione una provincia, distrito o proyecto</p>
+              </div>
+            </header>
+            <div id="province-panel-body" class="province-panel-body">
+              <ul id="province-project-list" class="province-project-list"></ul>
+            </div>
+          </section>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/leaflet-search@3.0.9/dist/leaflet-search.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
+
+  <script>
+    window.DRAA_CONFIG = {
+      geoserverUrl: `${window.location.origin}/geoserver`,
+      workspace: "visor_draa",
+      layers: {
+        provincias: "provincial",
+        distritos: "distrital",
+        zonas: "zonas_intervencion",
+        proyectos: "puntos"
+      },
+      wfs: {
+        proyectosUrl: `${window.location.origin}/geoserver/visor_draa/ows?service=WFS&version=1.0.0&request=GetFeature&typeName=visor_draa%3Apuntos&outputFormat=application%2Fjson&srsName=EPSG:4326`
+      }
+    };
+  </script>
+
+  <script type="module" src="js/app.js"></script>
+</body>
+</html>

@@ -1,0 +1,127 @@
+{
+  "type": "FeatureCollection",
+  "name": "proyectos_draa_demo",
+  "crs": {
+    "type": "name",
+    "properties": {
+      "name": "EPSG:4326"
+    }
+  },
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "id": 1,
+        "nombre_proyecto": "Fortalecimiento de cadena productiva de quinua",
+        "provincia": "Huamanga",
+        "distrito": "Pacaycasa",
+        "comunidad": "Comunidad Campesina de Pacaycasa",
+        "estado": "En ejecucion",
+        "presupuesto": 450000,
+        "beneficiarios": 230,
+        "descripcion": "Asistencia tecnica, equipamiento y mejora de riego tecnificado para productores de quinua.",
+        "fecha_inicio": "2025-03-01",
+        "fecha_fin": "2026-08-30",
+        "foto1": "https://images.unsplash.com/photo-1464226184884-fa280b87c399?auto=format&fit=crop&w=1000&q=60",
+        "foto2": "https://images.unsplash.com/photo-1492496913980-501348b61469?auto=format&fit=crop&w=1000&q=60",
+        "foto3": "https://images.unsplash.com/photo-1500595046743-cd271d694d30?auto=format&fit=crop&w=1000&q=60"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [-74.2052, -13.1524]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": 2,
+        "nombre_proyecto": "Mejoramiento de produccion de palta hass",
+        "provincia": "Huanta",
+        "distrito": "Luricocha",
+        "comunidad": "Centro Poblado de Luricocha",
+        "estado": "Planificado",
+        "presupuesto": 620000,
+        "beneficiarios": 310,
+        "descripcion": "Implementacion de viveros y capacitaciones en manejo fitosanitario de palta hass.",
+        "fecha_inicio": "2026-01-15",
+        "fecha_fin": "2027-07-30",
+        "foto1": "https://images.unsplash.com/photo-1523741543316-beb7fc7023d8?auto=format&fit=crop&w=1000&q=60",
+        "foto2": "https://images.unsplash.com/photo-1598512752271-33f913a5af13?auto=format&fit=crop&w=1000&q=60",
+        "foto3": "https://images.unsplash.com/photo-1502741338009-cac2772e18bc?auto=format&fit=crop&w=1000&q=60"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [-74.2441, -12.9394]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": 3,
+        "nombre_proyecto": "Impulso de ganaderia lechera altoandina",
+        "provincia": "Cangallo",
+        "distrito": "Paras",
+        "comunidad": "Comunidad de Paras",
+        "estado": "Finalizado",
+        "presupuesto": 810000,
+        "beneficiarios": 420,
+        "descripcion": "Mejoramiento genetico bovino y centros de acopio de leche.",
+        "fecha_inicio": "2023-02-01",
+        "fecha_fin": "2025-02-28",
+        "foto1": "https://images.unsplash.com/photo-1500595046743-ddf4d3d753fd?auto=format&fit=crop&w=1000&q=60",
+        "foto2": "https://images.unsplash.com/photo-1516466723877-e4ec1d736c8a?auto=format&fit=crop&w=1000&q=60",
+        "foto3": "https://images.unsplash.com/photo-1452378174528-3090a4bba7b2?auto=format&fit=crop&w=1000&q=60"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [-74.6151, -13.5521]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": 4,
+        "nombre_proyecto": "Recuperacion de suelos degradados",
+        "provincia": "La Mar",
+        "distrito": "San Miguel",
+        "comunidad": "Comunidad de Ninabamba",
+        "estado": "En ejecucion",
+        "presupuesto": 390000,
+        "beneficiarios": 190,
+        "descripcion": "Manejo sostenible de suelos y barreras vivas en laderas.",
+        "fecha_inicio": "2025-05-10",
+        "fecha_fin": "2026-12-20",
+        "foto1": "https://images.unsplash.com/photo-1465379944081-7f47de8d74ac?auto=format&fit=crop&w=1000&q=60",
+        "foto2": "https://images.unsplash.com/photo-1472145246862-b24cf25c4a36?auto=format&fit=crop&w=1000&q=60",
+        "foto3": "https://images.unsplash.com/photo-1567411308822-6a2d5a336f7c?auto=format&fit=crop&w=1000&q=60"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [-73.7878, -13.0105]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": 5,
+        "nombre_proyecto": "Fortalecimiento de cacao organico",
+        "provincia": "Huanta",
+        "distrito": "Sivia",
+        "comunidad": "Centro Poblado de Sivia",
+        "estado": "En ejecucion",
+        "presupuesto": 730000,
+        "beneficiarios": 360,
+        "descripcion": "Escuelas de campo para cacao organico y certificacion de parcelas.",
+        "fecha_inicio": "2025-01-20",
+        "fecha_fin": "2026-11-15",
+        "foto1": "https://images.unsplash.com/photo-1461009683693-342af2f2d6ce?auto=format&fit=crop&w=1000&q=60",
+        "foto2": "https://images.unsplash.com/photo-1549388604-817d15aa0110?auto=format&fit=crop&w=1000&q=60",
+        "foto3": "https://images.unsplash.com/photo-1509440159596-0249088772ff?auto=format&fit=crop&w=1000&q=60"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [-73.9412, -12.5112]
+      }
+    }
+  ]
+}
