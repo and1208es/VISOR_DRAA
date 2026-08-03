@@ -83,7 +83,7 @@
   .sidebar-content { padding: 0.65rem 0.9rem 1rem; }
 
   .sidebar .offcanvas-title {
-    font-family: "Montserrat", sans-serif;
+    font-family: "Inter", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
     font-size: 0.95rem;
     font-weight: 700;
   }
@@ -527,4 +527,156 @@
   .institutional-brand { gap: 0.42rem; }
   .brand-copy { max-width: calc(100vw - 116px); }
   .smart-project-search { left: 60px; }
+}
+
+/* Escala tipográfica Inter responsive */
+@media (max-width: 767px) {
+  .brand-title {
+    display: block;
+    font-size: 15px;
+    font-weight: 700;
+    line-height: 1.15;
+    letter-spacing: -0.01em;
+    word-break: normal;
+    white-space: nowrap;
+  }
+
+  .brand-subtitle {
+    display: block;
+    margin-top: 2px;
+    font-size: 10.5px;
+    font-weight: 500;
+    line-height: 1.2;
+    white-space: nowrap;
+  }
+
+  .panel-title { font-size: 15px; }
+  .form-label { font-size: 12.5px; }
+  .form-select,
+  .smart-search-input { font-size: 14px; }
+  .btn,
+  button { font-size: 13.5px; text-align: center; }
+
+  .leaflet-popup.has-selection-indicator .leaflet-popup-content {
+    min-width: 220px;
+    max-width: min(270px, calc(100vw - 32px));
+  }
+
+  .popup-selection-indicator {
+    font-size: 13.5px;
+    line-height: 1.45;
+    word-break: normal;
+    overflow-wrap: break-word;
+  }
+
+  .coord-control,
+  .leaflet-control-scale-line { font-size: 11.5px; font-weight: 500; }
+}
+
+@media (max-width: 359px) {
+  .brand-subtitle { display: none; }
+}
+
+/* UX responsive del encabezado y panel lateral */
+@media (max-width: 1024px) {
+  .sidebar.offcanvas {
+    width: min(88vw, 360px);
+    border-radius: 0 16px 16px 0;
+    box-shadow: 12px 0 32px rgba(9, 47, 36, 0.18);
+  }
+
+  .sidebar .offcanvas-header {
+    min-height: 64px;
+    padding: 12px 16px;
+  }
+
+  .sidebar-content { padding: 12px 16px 24px; }
+  .panel-block { padding-block: 16px; }
+  .panel-capas .form-check { min-height: 44px; }
+}
+
+@media (max-width: 767px) {
+  .topbar .container-fluid {
+    padding-inline: 8px !important;
+    gap: 8px;
+  }
+
+  .sidebar-toggle {
+    flex: 0 0 44px;
+    width: 44px;
+    min-width: 44px;
+    height: 44px;
+    min-height: 44px;
+    padding: 0;
+    border-radius: 10px;
+  }
+
+  .institutional-brand {
+    min-width: 0;
+    max-width: calc(100vw - 68px);
+    gap: 8px;
+  }
+
+  .brand-badge {
+    flex: 0 0 42px;
+    width: 42px;
+    height: 42px;
+  }
+
+  .brand-copy { min-width: 0; text-align: left; }
+  .brand-title,
+  .brand-subtitle { max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+  .statistics-grid { gap: 8px; }
+  .stat-card { min-height: 68px; padding: 10px; }
+  .filter-actions { grid-template-columns: 1fr; }
+  .filter-actions .btn { min-height: 44px; }
+}
+
+@media (max-width: 1024px) {
+  .institutional-brand { order: 1; }
+
+  .sidebar-toggle {
+    order: 2;
+    margin-right: 0 !important;
+    margin-left: auto !important;
+  }
+}
+
+@media (max-width: 767px) {
+  .institutional-brand {
+    flex: 1 1 auto;
+    max-width: calc(100% - 52px);
+  }
+
+  .brand-copy {
+    width: 100%;
+    max-width: none;
+    min-width: 0;
+  }
+
+  .brand-title-full { display: none !important; }
+
+  .brand-title-short {
+    display: block !important;
+    overflow: visible;
+    font-size: clamp(13px, 4vw, 15px);
+    line-height: 1.15;
+    text-overflow: clip;
+    white-space: nowrap;
+  }
+
+  .brand-subtitle {
+    max-width: 100%;
+    font-size: clamp(9px, 2.7vw, 10.5px);
+  }
+
+  .smart-project-search {
+    left: 44px;
+    right: 12px;
+  }
+}
+
+@media (max-width: 359px) {
+  .brand-subtitle { display: none; }
 }

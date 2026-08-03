@@ -28,7 +28,7 @@ export function initMap() {
         "Satelital": baseSatellite
       },
       {},
-      { collapsed: true, position: "topleft" }
+      { collapsed: true, position: "bottomleft" }
     )
     .addTo(map);
 
