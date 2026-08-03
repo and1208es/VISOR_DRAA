@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="description" content="Visor institucional de proyectos de la Direccion Regional de Agricultura de Ayacucho">
   <title>Visor de proyectos DRA - Ayacucho</title>
+  <link rel="icon" href="./assets/img/logo_draa.jpg">
 
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -16,7 +17,7 @@
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css">
 
   <link rel="stylesheet" href="css/estilos.css">
-  <link rel="stylesheet" href="css/responsive.css">
+  <link rel="stylesheet" href="css/responsive.css?v=20260607">
 </head>
 <body>
   <div class="app-shell">
@@ -38,7 +39,7 @@
     </header>
 
     <main class="main-layout">
-      <aside class="sidebar offcanvas-lg offcanvas-start" tabindex="-1" id="sidebar" aria-labelledby="sidebarLabel">
+      <aside class="sidebar offcanvas offcanvas-lg offcanvas-start" tabindex="-1" id="sidebar" aria-labelledby="sidebarLabel">
         <div class="offcanvas-header d-lg-none">
           <h5 class="offcanvas-title" id="sidebarLabel">Panel SIG</h5>
           <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
@@ -153,6 +154,9 @@
       },
       wfs: {
         proyectosUrl: `${window.location.origin}/geoserver/visor_draa/ows?service=WFS&version=1.0.0&request=GetFeature&typeName=visor_draa%3Apuntos&outputFormat=application%2Fjson&srsName=EPSG:4326`
+      },
+      fallback: {
+        allowLocalGeoJSON: false
       }
     };
   </script>

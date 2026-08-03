@@ -1,0 +1,13 @@
+services:
+  visor_draa:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: visor_draa
+    ports:
+      - "5500:5500"
+    environment:
+      GEOSERVER_BASE: ${GEOSERVER_BASE:-http://host.docker.internal:8080}
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    restart: unless-stopped

@@ -1,11 +1,11 @@
+import os
 from http.server import SimpleHTTPRequestHandler, ThreadingHTTPServer
 from urllib.error import HTTPError, URLError
-from urllib.parse import urlunsplit
 from urllib.request import Request, urlopen
 
 
 class ProxyStaticHandler(SimpleHTTPRequestHandler):
-    geoserver_base = "http://localhost:8080"
+    geoserver_base = os.getenv("GEOSERVER_BASE", "http://localhost:8080").rstrip("/")
 
     def do_GET(self):
         if self.path.startswith("/geoserver/"):
@@ -20,7 +20,7 @@ class ProxyStaticHandler(SimpleHTTPRequestHandler):
         super().do_HEAD()
 
     def _proxy_request(self, method):
-        target = urlunsplit(("http", "localhost:8080", self.path, "", ""))
+        target = f"{self.geoserver_base}{self.path}"
         request = Request(target, method=method)
 
         try:
@@ -60,7 +60,7 @@ class ProxyStaticHandler(SimpleHTTPRequestHandler):
 def main():
     server = ThreadingHTTPServer(("0.0.0.0", 5500), ProxyStaticHandler)
     print("Servidor visor + proxy activo en http://localhost:5500")
-    print("Proxy GeoServer: /geoserver/* -> http://localhost:8080/geoserver/*")
+    print(f"Proxy GeoServer: /geoserver/* -> {ProxyStaticHandler.geoserver_base}/geoserver/*")
     server.serve_forever()
 
 

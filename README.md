@@ -161,6 +161,18 @@ Ejemplo con Python:
 Abrir:
 - http://localhost:8085
 
+### Arranque local recomendado (Windows)
+Para evitar errores intermitentes de conexion entre visor y GeoServer:
+
+1. Desde la carpeta del proyecto, ejecutar:
+   - powershell -ExecutionPolicy Bypass -File .\start-local.ps1
+2. El script:
+   - Verifica si GeoServer responde en http://localhost:8080
+   - Inicia Tomcat si GeoServer no esta activo
+   - Levanta el visor + proxy en http://localhost:5500
+3. Abrir:
+   - http://localhost:5500
+
 ## 9) Despliegue en Apache (Ubuntu)
 
 1. Instalar Apache:
@@ -218,5 +230,34 @@ Abrir:
 3. Revisar nombres de capa en js/app.js
 4. Levantar frontend
 5. Validar filtros, popups, dashboard y graficos
+
+## 13) Levantar con Docker
+
+### Requisitos
+- Docker Desktop (Windows/macOS) o Docker Engine + Compose (Linux)
+
+### Opcion A: usando docker compose (recomendada)
+Desde la carpeta del proyecto:
+- docker compose up -d --build
+
+Abrir en navegador:
+- http://localhost:5500
+
+Parar contenedor:
+- docker compose down
+
+### Opcion B: usando docker run
+1. Construir imagen:
+- docker build -t visor-draa .
+
+2. Ejecutar contenedor:
+- docker run --name visor-draa -p 5500:5500 -e GEOSERVER_BASE=http://host.docker.internal:8080 --add-host=host.docker.internal:host-gateway visor-draa
+
+### Variable importante
+- GEOSERVER_BASE: URL base de GeoServer (sin barra final).
+- Por defecto: http://host.docker.internal:8080
+
+Ejemplo si GeoServer esta en otro host:
+- GEOSERVER_BASE=http://192.168.1.50:8080
 
 Con esto tienes un geoportal profesional, modular y listo para evolucionar a entorno institucional.

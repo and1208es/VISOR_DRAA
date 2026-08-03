@@ -60,10 +60,18 @@ const DISTRICT_HIGHLIGHT_STYLE = {
 document.addEventListener("DOMContentLoaded", async () => {
   setCurrentDate();
 
-  const { map, layerControl } = initMap();
+  const { map } = initMap();
   APP_STATE.map = map;
 
-  const { overlays, boundaryCatalog, allProjects, projectLayer, setProjectFeatures, getBoundaryGeoJSON } = await initCapas({
+  const {
+    overlays,
+    boundaryCatalog,
+    allProjects,
+    projectLayer,
+    projectsLoadError,
+    setProjectFeatures,
+    getBoundaryGeoJSON
+  } = await initCapas({
     config: CONFIG,
     map,
     popupBuilder: buildProjectPopup
@@ -93,7 +101,30 @@ document.addEventListener("DOMContentLoaded", async () => {
   animateCards();
 });
 
-function bindMapAndLayerEvents() {}
+function bindMapAndLayerEvents() {
+  const map = APP_STATE.map;
+  if (!map) {
+    return;
+  }
+
+  const invalidateMapSize = () => {
+    map.invalidateSize({ pan: false, debounceMoveend: true });
+  };
+
+  const scheduleInvalidate = () => {
+    requestAnimationFrame(() => invalidateMapSize());
+    setTimeout(invalidateMapSize, 180);
+  };
+
+  scheduleInvalidate();
+  window.addEventListener("resize", scheduleInvalidate, { passive: true });
+
+  const sidebar = document.getElementById("sidebar");
+  if (sidebar) {
+    sidebar.addEventListener("shown.bs.offcanvas", scheduleInvalidate);
+    sidebar.addEventListener("hidden.bs.offcanvas", scheduleInvalidate);
+  }
+}
 
 function bindLayerToggles() {
   document.querySelectorAll(".layer-toggle").forEach((checkbox) => {
@@ -438,7 +469,7 @@ function renderProvinceProjectsPanel(province) {
   const byProject = {};
 
   (APP_STATE.allProjects?.features || [])
-    .filter((feature) => feature?.properties?.provincia === province)
+    .filter((feature) => normalizeText(feature?.properties?.provincia) === normalizeText(province))
     .forEach((feature) => {
       const p = feature?.properties || {};
       const locality = String(p.sector || p.localidad || p.comunidad || "Sin localidad").trim() || "Sin localidad";
@@ -521,8 +552,8 @@ function renderDistrictProjectsPanel(province, district) {
   (APP_STATE.allProjects?.features || [])
     .filter((feature) => {
       const p = feature?.properties || {};
-      const matchDistrict = p.distrito === district;
-      const matchProvince = !province || p.provincia === province;
+      const matchDistrict = normalizeText(p.distrito) === normalizeText(district);
+      const matchProvince = !province || normalizeText(p.provincia) === normalizeText(province);
       return matchDistrict && matchProvince;
     })
     .forEach((feature) => {
@@ -675,7 +706,7 @@ function getProjectScope(project) {
   (APP_STATE.allProjects?.features || []).forEach((feature) => {
     const p = feature?.properties || {};
     const name = p.proyecto || p.nombre_proyecto || "";
-    if (name !== project) {
+    if (normalizeText(name) !== normalizeText(project)) {
       return;
     }
 
@@ -764,6 +795,7 @@ function setText(id, value) {
     el.textContent = value;
   }
 }
+
 
 function setCurrentDate() {
   const now = new Date();

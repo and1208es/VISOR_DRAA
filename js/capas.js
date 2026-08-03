@@ -155,8 +155,9 @@ function buildProvincePopup(feature) {
 }
 
 export async function initCapas({ config, map, popupBuilder }) {
-  const workspace = config.workspace;
-  const geoserverBase = config.geoserverUrl;
+  const geojsonProvinciasUrl = "./data/provincias.geojson";
+  const geojsonDistritosUrl = "./data/distritos.geojson";
+  const geojsonProyectosUrl = "./data/proyectos.geojson";
 
   if (!map.getPane("boundariesPane")) {
     map.createPane("boundariesPane");
@@ -168,13 +169,6 @@ export async function initCapas({ config, map, popupBuilder }) {
     map.createPane("projectsPane");
     map.getPane("projectsPane").style.zIndex = "650";
   }
-
-  const wmsProvincias = buildWMSLayer(geoserverBase, `${workspace}:${config.layers.provincias}`, {
-    opacity: 0.55
-  });
-  const wmsDistritos = buildWMSLayer(geoserverBase, `${workspace}:${config.layers.distritos}`, {
-    opacity: 0.7
-  });
 
   const projectLayer = L.geoJSON(null, {
     pane: "projectsPane",
@@ -223,29 +217,33 @@ export async function initCapas({ config, map, popupBuilder }) {
   map.on("zoomend", restyleProjectPointsByZoom);
 
   let allProjects = { type: "FeatureCollection", features: [] };
+  let projectsLoadError = null;
   let boundaryCatalog = { provincias: [], distritos: [], byProvinceDistricts: {} };
   let provincesGeoJSON = null;
   let districtsGeoJSON = null;
+  const emptyFeatureCollection = () => ({ type: "FeatureCollection", features: [] });
 
-  const wfsProjectsUrl = getProjectsWfsUrl(config, workspace, geoserverBase);
-
-  const geojsonProvinciasUrl = safeUrl(
-    geoserverBase,
-    `/ows?service=WFS&version=1.0.0&request=GetFeature&typeName=${encodeURIComponent(`${workspace}:${config.layers.provincias}`)}&outputFormat=application/json&srsName=EPSG:4326`
-  );
-
-  const geojsonDistritosUrl = safeUrl(
-    geoserverBase,
-    `/ows?service=WFS&version=1.0.0&request=GetFeature&typeName=${encodeURIComponent(`${workspace}:${config.layers.distritos}`)}&outputFormat=application/json&srsName=EPSG:4326`
-  );
-
-  let provincesLayer = null;
-  let districtsLayer = null;
+  let provincesLayer = L.geoJSON(null, {
+    pane: "boundariesPane",
+    style: provinceStyle,
+    interactive: false
+  }).addTo(map);
+  let districtsLayer = L.geoJSON(null, {
+    pane: "boundariesPane",
+    style: districtStyle,
+    interactive: false
+  }).addTo(map);
 
   try {
     const [provincesData, districtsData] = await Promise.all([
-      fetchGeoJSON(geojsonProvinciasUrl),
-      fetchGeoJSON(geojsonDistritosUrl)
+      fetchGeoJSON(geojsonProvinciasUrl).catch((error) => {
+        console.error(`No se pudo cargar ${geojsonProvinciasUrl}.`, error);
+        return emptyFeatureCollection();
+      }),
+      fetchGeoJSON(geojsonDistritosUrl).catch((error) => {
+        console.error(`No se pudo cargar ${geojsonDistritosUrl}.`, error);
+        return emptyFeatureCollection();
+      })
     ]);
 
     const byProvinceDistricts = {};
@@ -280,72 +278,24 @@ export async function initCapas({ config, map, popupBuilder }) {
     provincesGeoJSON = provincesData;
     districtsGeoJSON = districtsData;
 
-    provincesLayer = L.geoJSON(provincesData, {
-      pane: "boundariesPane",
-      style: provinceStyle,
-      interactive: false
-    }).addTo(map);
-
-    districtsLayer = L.geoJSON(districtsData, {
-      pane: "boundariesPane",
-      style: districtStyle,
-      interactive: false
-    }).addTo(map);
+    provincesLayer.addData(provincesData);
+    districtsLayer.addData(districtsData);
 
     projectLayer.bringToFront();
   } catch (boundaryError) {
-    console.warn("No se pudo cargar provincias/distritos en WFS. Se usara WMS.", boundaryError);
-
-    try {
-      const [provincesFallback, districtsFallback] = await Promise.all([
-        fetchGeoJSON("./data/provincias.geojson"),
-        fetchGeoJSON("./data/distritos.geojson")
-      ]);
-
-      provincesGeoJSON = provincesFallback;
-      districtsGeoJSON = districtsFallback;
-
-      provincesLayer = L.geoJSON(provincesFallback, {
-        pane: "boundariesPane",
-        style: provinceStyle,
-        interactive: false
-      }).addTo(map);
-
-      districtsLayer = L.geoJSON(districtsFallback, {
-        pane: "boundariesPane",
-        style: districtStyle,
-        interactive: false
-      }).addTo(map);
-
-      projectLayer.bringToFront();
-      console.info("[Fallback] Se cargaron provincias y distritos desde archivos GeoJSON locales.");
-    } catch (boundaryFallbackError) {
-      console.warn("No se pudo cargar fallback local de provincias/distritos. Se intentara WMS.", boundaryFallbackError);
-      wmsProvincias.addTo(map);
-      wmsDistritos.addTo(map);
-      provincesLayer = wmsProvincias;
-      districtsLayer = wmsDistritos;
-    }
+    console.error("No se pudieron procesar los GeoJSON locales de provincias y distritos.", boundaryError);
   }
 
-  async function refreshProjects({ fitToData = false, allowFallback = true } = {}) {
+  async function refreshProjects({ fitToData = false } = {}) {
     let latestProjects = null;
+    projectsLoadError = null;
 
     try {
-      latestProjects = await fetchGeoJSON(wfsProjectsUrl);
+      latestProjects = await fetchGeoJSON(geojsonProyectosUrl);
     } catch (projectError) {
-      console.warn("No se pudo cargar proyectos desde WFS.", projectError);
-
-      if (!allowFallback) {
-        throw projectError;
-      }
-
-      try {
-        latestProjects = await fetchGeoJSON("./data/proyectos.geojson");
-      } catch (fallbackError) {
-        console.error("Fallo en datos de respaldo", fallbackError);
-        throw fallbackError;
-      }
+      projectsLoadError = `No se pudo cargar la capa de proyectos desde ${geojsonProyectosUrl}.`;
+      console.error(projectsLoadError, projectError);
+      latestProjects = emptyFeatureCollection();
     }
 
     allProjects = latestProjects;
@@ -353,7 +303,7 @@ export async function initCapas({ config, map, popupBuilder }) {
     projectLayer.addData(allProjects);
     projectLayer.bringToFront();
     restyleProjectPointsByZoom();
-    console.info(`[WFS] Proyectos cargados: ${allProjects?.features?.length || 0}`);
+    console.info(`[GeoJSON] Proyectos cargados: ${allProjects?.features?.length || 0}`);
 
     if (fitToData && projectLayer.getLayers().length > 0) {
       map.fitBounds(projectLayer.getBounds(), { padding: [20, 20], maxZoom: 14 });
@@ -362,7 +312,7 @@ export async function initCapas({ config, map, popupBuilder }) {
     return allProjects;
   }
 
-  await refreshProjects({ fitToData: true, allowFallback: true });
+  await refreshProjects({ fitToData: true });
 
   function setProjectFeatures(featureCollection) {
     projectLayer.clearLayers();
@@ -404,6 +354,7 @@ export async function initCapas({ config, map, popupBuilder }) {
     boundaryCatalog,
     allProjects,
     projectLayer,
+    projectsLoadError,
     setProjectFeatures,
     refreshProjects,
     getBoundaryGeoJSON

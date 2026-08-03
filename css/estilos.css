@@ -19,7 +19,9 @@
 html,
 body {
   height: 100%;
+  width: 100%;
   margin: 0;
+  overflow: hidden;
   font-family: "Source Sans 3", sans-serif;
   color: var(--ink-900);
   background:
@@ -30,6 +32,7 @@ body {
 
 .app-shell {
   min-height: 100%;
+  width: 100%;
   display: flex;
   flex-direction: column;
 }
@@ -605,20 +608,24 @@ body {
 
 .popup-row {
   display: grid;
-  grid-template-columns: 92px 1fr;
-  gap: 0.35rem;
+  grid-template-columns: 100px minmax(0, 1fr);
+  gap: 0.55rem;
   align-items: start;
 }
 
 .popup-label {
+  display: block;
   color: #4a5f54;
   font-weight: 700;
+  line-height: 1.22;
 }
 
 .popup-value {
+  display: block;
   margin: 0;
   line-height: 1.22;
   color: #22372d;
+  overflow-wrap: anywhere;
 }
 
 .popup-media-section {

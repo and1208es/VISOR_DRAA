@@ -3,7 +3,29 @@ function normalize(value) {
 }
 
 function sortUnique(values) {
-  return [...new Set(values.filter(Boolean))].sort((a, b) => a.localeCompare(b, "es"));
+  return [...new Set(values.filter(Boolean).map((value) => String(value).trim()))].sort((a, b) =>
+    a.localeCompare(b, "es")
+  );
+}
+
+function fillSelect(select, placeholder, values) {
+  if (!select) {
+    return;
+  }
+
+  select.innerHTML = "";
+
+  const defaultOption = document.createElement("option");
+  defaultOption.value = "";
+  defaultOption.textContent = placeholder;
+  select.appendChild(defaultOption);
+
+  values.forEach((value) => {
+    const option = document.createElement("option");
+    option.value = value;
+    option.textContent = value;
+    select.appendChild(option);
+  });
 }
 
 export function getFilterState() {
@@ -33,26 +55,9 @@ export function populateFilterOptions(featureCollection, catalogs = {}) {
   const distritoSelect = document.getElementById("filtro-distrito");
   const proyectoSelect = document.getElementById("filtro-proyecto");
 
-  if (provinciaSelect) {
-    provinciaSelect.innerHTML = '<option value="">Todas</option>';
-    provincias.forEach((prov) => {
-      provinciaSelect.insertAdjacentHTML("beforeend", `<option value="${prov}">${prov}</option>`);
-    });
-  }
-
-  if (distritoSelect) {
-    distritoSelect.innerHTML = '<option value="">Todos</option>';
-    distritos.forEach((dist) => {
-      distritoSelect.insertAdjacentHTML("beforeend", `<option value="${dist}">${dist}</option>`);
-    });
-  }
-
-  if (proyectoSelect) {
-    proyectoSelect.innerHTML = '<option value="">Todos</option>';
-    proyectos.forEach((proy) => {
-      proyectoSelect.insertAdjacentHTML("beforeend", `<option value="${proy}">${proy}</option>`);
-    });
-  }
+  fillSelect(provinciaSelect, "Todas", provincias);
+  fillSelect(distritoSelect, "Todos", distritos);
+  fillSelect(proyectoSelect, "Todos", proyectos);
 
 }
 
@@ -64,10 +69,7 @@ export function refreshDistrictFilter(featureCollection, province, catalogs = {}
 
   const mappedDistricts = catalogs?.byProvinceDistricts?.[province] || null;
   if (province && Array.isArray(mappedDistricts) && mappedDistricts.length) {
-    distritoSelect.innerHTML = '<option value="">Todos</option>';
-    mappedDistricts.forEach((dist) => {
-      distritoSelect.insertAdjacentHTML("beforeend", `<option value="${dist}">${dist}</option>`);
-    });
+    fillSelect(distritoSelect, "Todos", mappedDistricts);
     return;
   }
 
@@ -77,10 +79,7 @@ export function refreshDistrictFilter(featureCollection, province, catalogs = {}
     : features;
 
   const distritos = sortUnique(source.map((f) => f?.properties?.distrito));
-  distritoSelect.innerHTML = '<option value="">Todos</option>';
-  distritos.forEach((dist) => {
-    distritoSelect.insertAdjacentHTML("beforeend", `<option value="${dist}">${dist}</option>`);
-  });
+  fillSelect(distritoSelect, "Todos", distritos);
 }
 
 export function applyFilters(featureCollection, filters) {
