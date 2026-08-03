@@ -53,7 +53,7 @@
           <section class="panel-block panel-statistics" aria-labelledby="statistics-title">
             <h2 class="panel-title" id="statistics-title">
               <svg class="panel-title-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20V10m6 10V4m6 16v-7m4 7H2"/></svg>
-              <span>Resumen regional</span>
+              <span>Resumen Ejecutivo</span>
             </h2>
             <div class="statistics-grid" aria-live="polite">
               <article class="stat-card stat-card-projects">
@@ -82,7 +82,16 @@
                 <strong class="stat-value stat-value-budget" id="stat-budget">—</strong>
               </article>
             </div>
-            <p class="statistics-note">Datos consolidados de los proyectos registrados</p>
+            <div class="executive-status" aria-label="Distribución de proyectos por estado">
+              <span class="executive-status-title">Distribución por estado</span>
+              <div class="executive-status-grid">
+                <span class="status-indicator status-execution"><span>En ejecución</span><strong id="stat-status-execution">—</strong></span>
+                <span class="status-indicator status-process"><span>En proceso</span><strong id="stat-status-process">—</strong></span>
+                <span class="status-indicator status-completed"><span>Finalizado</span><strong id="stat-status-completed">—</strong></span>
+                <span class="status-indicator status-other"><span>Otros</span><strong id="stat-status-other">—</strong></span>
+              </div>
+            </div>
+            <p id="statistics-note" class="statistics-note">Datos consolidados de los proyectos registrados</p>
           </section>
 
           <section class="panel-block panel-filtros">
@@ -272,105 +281,6 @@
           notifyMapResize();
         });
         window.addEventListener("orientationchange", notifyMapResize, { passive: true });
-      });
-    })();
-  </script>
-
-  <script>
-    (() => {
-      const statisticIds = [
-        "stat-projects",
-        "stat-provinces",
-        "stat-districts",
-        "stat-beneficiaries",
-        "stat-budget"
-      ];
-
-      const setStatisticsUnavailable = () => {
-        statisticIds.forEach((id) => {
-          const element = document.getElementById(id);
-          if (element) {
-            element.textContent = "Sin datos";
-          }
-        });
-      };
-
-      const parseFlexibleNumber = (value) => {
-        if (typeof value === "number") {
-          return Number.isFinite(value) ? value : 0;
-        }
-
-        if (typeof value !== "string") {
-          return 0;
-        }
-
-        let normalized = value.trim().replace(/[^\d,.-]/g, "");
-        if (!normalized) {
-          return 0;
-        }
-
-        const lastComma = normalized.lastIndexOf(",");
-        const lastDot = normalized.lastIndexOf(".");
-
-        if (lastComma >= 0 && lastDot >= 0) {
-          normalized = lastComma > lastDot
-            ? normalized.replace(/\./g, "").replace(",", ".")
-            : normalized.replace(/,/g, "");
-        } else if (lastComma >= 0) {
-          const commaGroups = normalized.split(",");
-          normalized = commaGroups.length > 2 || commaGroups.at(-1).length === 3
-            ? commaGroups.join("")
-            : normalized.replace(",", ".");
-        } else if (lastDot >= 0) {
-          const dotGroups = normalized.split(".");
-          if (dotGroups.length > 2 || dotGroups.at(-1).length === 3) {
-            normalized = dotGroups.join("");
-          }
-        }
-
-        const parsed = Number(normalized);
-        return Number.isFinite(parsed) ? parsed : 0;
-      };
-
-      const uniqueValues = (features, propertyName) => new Set(
-        features
-          .map((feature) => String(feature?.properties?.[propertyName] ?? "").trim().toLocaleLowerCase("es"))
-          .filter(Boolean)
-      ).size;
-
-      document.addEventListener("DOMContentLoaded", async () => {
-        try {
-          const response = await fetch("./data/proyectos.geojson");
-          if (!response.ok) {
-            throw new Error(`HTTP ${response.status}`);
-          }
-
-          const geojson = await response.json();
-          const features = Array.isArray(geojson?.features) ? geojson.features : [];
-          const beneficiaries = features.reduce(
-            (total, feature) => total + parseFlexibleNumber(feature?.properties?.beneficiarios),
-            0
-          );
-          const budget = features.reduce(
-            (total, feature) => total + parseFlexibleNumber(feature?.properties?.presupuesto),
-            0
-          );
-          const integerFormat = new Intl.NumberFormat("es-PE", { maximumFractionDigits: 0 });
-          const currencyFormat = new Intl.NumberFormat("es-PE", {
-            style: "currency",
-            currency: "PEN",
-            maximumFractionDigits: 0
-          });
-
-          document.getElementById("stat-projects").textContent = integerFormat.format(features.length);
-          document.getElementById("stat-provinces").textContent = integerFormat.format(uniqueValues(features, "provincia"));
-          document.getElementById("stat-districts").textContent = integerFormat.format(uniqueValues(features, "distrito"));
-          document.getElementById("stat-beneficiaries").textContent = integerFormat.format(beneficiaries);
-          document.getElementById("stat-budget").textContent = currencyFormat.format(budget);
-        } catch (error) {
-          console.error("No se pudieron calcular las estadísticas desde ./data/proyectos.geojson.", error);
-          setStatisticsUnavailable();
-        }
       });
     })();
   </script>

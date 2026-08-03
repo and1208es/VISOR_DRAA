@@ -85,6 +85,8 @@ document.addEventListener("DOMContentLoaded", async () => {
   APP_STATE.setProjectFeatures = setProjectFeatures;
   APP_STATE.getBoundaryGeoJSON = getBoundaryGeoJSON;
 
+  updateExecutiveDashboard(APP_STATE.allProjects);
+
   bindMapAndLayerEvents();
   addSearchControl(map, projectLayer, "proyecto");
 
@@ -181,6 +183,7 @@ function bindFilterEvents() {
     const filtered = applyFilters(APP_STATE.allProjects, filters);
     APP_STATE.filteredProjects = filtered;
     APP_STATE.setProjectFeatures(filtered);
+    updateExecutiveDashboard(filtered, hasActiveFilters(filters));
     setProvinceInteractivity(!hasActiveFilters(filters));
     updateGeographicContext(filters.provincia, filters.distrito, filters.proyecto);
 
@@ -197,6 +200,7 @@ function bindFilterEvents() {
       clearFilterUI();
       APP_STATE.filteredProjects = APP_STATE.allProjects;
       APP_STATE.setProjectFeatures(APP_STATE.allProjects);
+      updateExecutiveDashboard(APP_STATE.allProjects);
       setProvinceInteractivity(true);
     },
     onProvinceChange: (province) => {
@@ -218,6 +222,114 @@ function bindFilterEvents() {
       zoomToProject(project);
     }
   });
+}
+
+const DASHBOARD_INTEGER_FORMAT = new Intl.NumberFormat("es-PE", { maximumFractionDigits: 0 });
+const DASHBOARD_CURRENCY_FORMAT = new Intl.NumberFormat("es-PE", {
+  style: "currency",
+  currency: "PEN",
+  maximumFractionDigits: 0
+});
+
+function parseDashboardNumber(value) {
+  if (typeof value === "number") {
+    return Number.isFinite(value) ? value : 0;
+  }
+
+  if (typeof value !== "string") {
+    return 0;
+  }
+
+  let normalized = value.trim().replace(/[^\d,.-]/g, "");
+  if (!normalized) {
+    return 0;
+  }
+
+  const lastComma = normalized.lastIndexOf(",");
+  const lastDot = normalized.lastIndexOf(".");
+  if (lastComma >= 0 && lastDot >= 0) {
+    normalized = lastComma > lastDot
+      ? normalized.replace(/\./g, "").replace(",", ".")
+      : normalized.replace(/,/g, "");
+  } else if (lastComma >= 0) {
+    const groups = normalized.split(",");
+    normalized = groups.length > 2 || groups.at(-1).length === 3
+      ? groups.join("")
+      : normalized.replace(",", ".");
+  } else if (lastDot >= 0) {
+    const groups = normalized.split(".");
+    if (groups.length > 2 || groups.at(-1).length === 3) {
+      normalized = groups.join("");
+    }
+  }
+
+  const parsed = Number(normalized);
+  return Number.isFinite(parsed) ? parsed : 0;
+}
+
+function setDashboardValue(id, value) {
+  const element = document.getElementById(id);
+  if (element) {
+    element.textContent = value;
+  }
+}
+
+function classifyProjectStatus(value) {
+  const status = normalizeKey(value);
+  if (status === "en ejecucion") {
+    return "execution";
+  }
+  if (status === "en proceso") {
+    return "process";
+  }
+  if (status === "finalizado") {
+    return "completed";
+  }
+  return "other";
+}
+
+function updateExecutiveDashboard(geojson, isFiltered = false) {
+  const startedAt = performance.now();
+  const features = Array.isArray(geojson?.features) ? geojson.features : [];
+  const provinces = new Set();
+  const districts = new Set();
+  const statuses = { execution: 0, process: 0, completed: 0, other: 0 };
+  let beneficiaries = 0;
+  let budget = 0;
+
+  features.forEach((feature) => {
+    const properties = feature?.properties || {};
+    const province = normalizeKey(properties.provincia);
+    const district = normalizeKey(properties.distrito);
+    if (province) provinces.add(province);
+    if (district) districts.add(district);
+
+    beneficiaries += parseDashboardNumber(properties.beneficiarios);
+    budget += parseDashboardNumber(properties.presupuesto);
+    statuses[classifyProjectStatus(properties.estado)] += 1;
+  });
+
+  setDashboardValue("stat-projects", DASHBOARD_INTEGER_FORMAT.format(features.length));
+  setDashboardValue("stat-provinces", DASHBOARD_INTEGER_FORMAT.format(provinces.size));
+  setDashboardValue("stat-districts", DASHBOARD_INTEGER_FORMAT.format(districts.size));
+  setDashboardValue("stat-beneficiaries", DASHBOARD_INTEGER_FORMAT.format(beneficiaries));
+  setDashboardValue("stat-budget", DASHBOARD_CURRENCY_FORMAT.format(budget));
+  setDashboardValue("stat-status-execution", DASHBOARD_INTEGER_FORMAT.format(statuses.execution));
+  setDashboardValue("stat-status-process", DASHBOARD_INTEGER_FORMAT.format(statuses.process));
+  setDashboardValue("stat-status-completed", DASHBOARD_INTEGER_FORMAT.format(statuses.completed));
+  setDashboardValue("stat-status-other", DASHBOARD_INTEGER_FORMAT.format(statuses.other));
+
+  const note = document.getElementById("statistics-note");
+  if (note) {
+    note.textContent = isFiltered
+      ? "Indicadores de los proyectos visibles"
+      : "Datos consolidados de los proyectos registrados";
+  }
+
+  const dashboard = document.querySelector(".panel-statistics");
+  if (dashboard) {
+    dashboard.dataset.recalculationMs = (performance.now() - startedAt).toFixed(3);
+  }
 }
 
 function normalizeText(value) {

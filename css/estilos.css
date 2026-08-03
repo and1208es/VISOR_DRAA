@@ -377,6 +377,73 @@ body.project-detail-open .content-area {
   text-align: right;
 }
 
+.executive-status {
+  margin-top: 0.58rem;
+  padding-top: 0.55rem;
+  border-top: 1px solid var(--border);
+}
+
+.executive-status-title {
+  display: block;
+  margin-bottom: 0.4rem;
+  color: var(--text-500);
+  font-size: 0.65rem;
+  font-weight: 800;
+  letter-spacing: 0.045em;
+  text-transform: uppercase;
+}
+
+.executive-status-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.32rem;
+}
+
+.status-indicator {
+  position: relative;
+  display: flex;
+  min-width: 0;
+  min-height: 30px;
+  padding: 0.34rem 0.42rem 0.34rem 0.62rem;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.35rem;
+  overflow: hidden;
+  color: var(--text-700);
+  background: var(--surface-muted);
+  border-radius: var(--radius-sm);
+  font-size: 0.65rem;
+  font-weight: 700;
+}
+
+.status-indicator::before {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  width: 3px;
+  content: "";
+  background: var(--text-500);
+}
+
+.status-indicator span {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.status-indicator strong {
+  flex: 0 0 auto;
+  color: var(--brand-900);
+  font-size: 0.76rem;
+}
+
+.status-execution::before { background: var(--brand-600); }
+.status-process::before { background: var(--gold-500); }
+.status-completed::before { background: #52758b; }
+.status-other::before { background: #8a918d; }
+
 /* Filtros */
 .panel-filtros .mb-2 { margin-bottom: 0.42rem !important; }
 .panel-filtros .mb-3 { margin-bottom: 0.6rem !important; }
