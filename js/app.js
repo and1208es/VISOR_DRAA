@@ -91,6 +91,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   updateExecutiveDashboard(APP_STATE.allProjects);
 
   bindMapAndLayerEvents();
+  bindDesktopSidebarToggle();
   addSearchControl(map, projectLayer, "proyecto");
 
   populateFilterOptions(APP_STATE.allProjects, APP_STATE.boundaryCatalog);
@@ -226,6 +227,32 @@ function bindFilterEvents() {
       zoomToProject(project);
     }
   });
+}
+
+function bindDesktopSidebarToggle() {
+  const hideButton = document.getElementById("desktop-sidebar-hide");
+  const showButton = document.getElementById("desktop-sidebar-show");
+  const map = APP_STATE.map;
+  if (!hideButton || !showButton || !map) {
+    return;
+  }
+
+  const resizeMap = () => {
+    requestAnimationFrame(() => map.invalidateSize({ pan: false }));
+    window.setTimeout(() => map.invalidateSize({ pan: false }), 180);
+  };
+
+  const setCollapsed = (collapsed) => {
+    document.body.classList.toggle("desktop-sidebar-collapsed", collapsed);
+    showButton.hidden = !collapsed;
+    hideButton.setAttribute("aria-expanded", String(!collapsed));
+    showButton.setAttribute("aria-expanded", String(collapsed));
+    resizeMap();
+    (collapsed ? showButton : hideButton).focus({ preventScroll: true });
+  };
+
+  hideButton.addEventListener("click", () => setCollapsed(true));
+  showButton.addEventListener("click", () => setCollapsed(false));
 }
 
 const DASHBOARD_INTEGER_FORMAT = new Intl.NumberFormat("es-PE", { maximumFractionDigits: 0 });

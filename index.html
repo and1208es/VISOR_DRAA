@@ -50,6 +50,9 @@
         </div>
 
         <div class="sidebar-content">
+          <button id="desktop-sidebar-hide" class="desktop-sidebar-action desktop-sidebar-hide" type="button" aria-label="Ocultar panel lateral">
+            <span aria-hidden="true">‹</span> Ocultar panel
+          </button>
           <section class="panel-block panel-statistics" aria-labelledby="statistics-title">
             <h2 class="panel-title" id="statistics-title">
               <svg class="panel-title-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20V10m6 10V4m6 16v-7m4 7H2"/></svg>
@@ -166,6 +169,10 @@
       <section class="content-area">
         <div class="map-wrapper">
           <div id="map" aria-label="Mapa interactivo del geoportal"></div>
+          <button id="desktop-sidebar-show" class="desktop-sidebar-action desktop-sidebar-show" type="button" aria-label="Mostrar panel lateral" hidden>
+            <span class="sidebar-toggle-icon" aria-hidden="true"></span>
+            <span>Panel</span>
+          </button>
           <section class="smart-project-search" aria-label="Buscador inteligente de proyectos">
             <label class="visually-hidden" for="smart-project-search-input">Buscar proyectos</label>
             <div class="smart-search-field">

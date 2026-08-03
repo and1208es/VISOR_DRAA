@@ -24,13 +24,23 @@ export function initMap() {
   const layerControl = L.control
     .layers(
       {
-        "OpenStreetMap": baseOSM,
+        "Mapa claro / OpenStreetMap": baseOSM,
         "Satelital": baseSatellite
       },
       {},
-      { collapsed: false, position: "bottomleft" }
+      { collapsed: true, position: "topleft" }
     )
     .addTo(map);
+
+  const layerControlContainer = layerControl.getContainer();
+  const layerToggle = layerControlContainer?.querySelector(".leaflet-control-layers-toggle");
+  if (layerToggle) {
+    layerToggle.setAttribute("aria-label", "Seleccionar mapa base");
+    layerToggle.setAttribute("title", "Seleccionar mapa base");
+  }
+  layerControlContainer?.addEventListener("change", () => {
+    layerControl.collapse?.();
+  });
 
   L.control.scale({ metric: true, imperial: false }).addTo(map);
 
@@ -44,15 +54,16 @@ function addCoordinateControl(map) {
     options: { position: "bottomright" },
     onAdd() {
       this._div = L.DomUtil.create("div", "coord-control");
-      this._div.innerHTML = "Lat: -, Lng: -";
+      this._div.setAttribute("role", "status");
+      this._div.setAttribute("aria-label", "Coordenadas del cursor");
+      this._div.innerHTML = '<span class="coord-label">Lat:</span> <span class="coord-lat">-</span><span class="coord-divider"> | </span><span class="coord-label">Lng:</span> <span class="coord-lng">-</span>';
       return this._div;
     },
     update(latlng) {
-      if (!latlng) {
-        this._div.innerHTML = "Lat: -, Lng: -";
-        return;
-      }
-      this._div.innerHTML = `Lat: ${latlng.lat.toFixed(5)} | Lng: ${latlng.lng.toFixed(5)}`;
+      const latitude = this._div.querySelector(".coord-lat");
+      const longitude = this._div.querySelector(".coord-lng");
+      if (latitude) latitude.textContent = latlng ? latlng.lat.toFixed(5) : "-";
+      if (longitude) longitude.textContent = latlng ? latlng.lng.toFixed(5) : "-";
     }
   });
 
