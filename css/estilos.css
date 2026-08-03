@@ -24,7 +24,7 @@
   --shadow-sm: 0 3px 10px rgba(9, 47, 36, 0.06);
   --shadow-md: 0 7px 18px rgba(9, 47, 36, 0.11);
   --shadow-lg: 0 12px 28px rgba(9, 47, 36, 0.17);
-  --ease: 180ms ease;
+  --ease: 160ms ease;
   --header-height: 64px;
   --sidebar-width: 310px;
 }
@@ -1376,6 +1376,85 @@ body.project-detail-open .content-area {
   to { opacity: 1; transform: translate3d(0, 0, 0); }
 }
 
+/* Corrección final de tipografía, orientación e iconografía */
+body {
+  font-weight: 400;
+  line-height: 1.5;
+}
+
+.brand-title,
+.panel-title,
+.project-detail-title {
+  font-weight: 600;
+  letter-spacing: -0.005em;
+}
+
+.brand-subtitle { font-weight: 400; letter-spacing: 0.01em; }
+
+.form-label,
+.stat-label,
+.project-detail-field dt {
+  font-weight: 500;
+  letter-spacing: 0.01em;
+}
+
+.btn,
+button {
+  font-family: "Montserrat", sans-serif;
+  font-weight: 600;
+}
+
+.map-floating-title {
+  width: auto;
+  min-width: 0;
+  max-width: 360px;
+}
+
+.map-floating-title,
+.map-floating-title strong,
+.map-floating-kicker {
+  writing-mode: horizontal-tb;
+  word-break: normal;
+  overflow-wrap: normal;
+  white-space: normal;
+}
+
+.map-floating-title strong {
+  display: -webkit-box;
+  overflow: hidden;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+}
+
+.panel-title-icon,
+.stat-icon,
+.smart-search-icon,
+.button-icon,
+.sidebar-toggle-icon,
+.layer-color-chip {
+  display: inline-flex;
+  flex: 0 0 auto;
+  align-items: center;
+  justify-content: center;
+}
+
+.panel-title-icon,
+.stat-icon,
+.smart-search-icon {
+  width: 19px;
+  height: 19px;
+}
+
+.smart-search-field,
+.smart-search-result,
+.project-detail-panel,
+.project-detail-close,
+.desktop-sidebar-action,
+.filter-actions .btn,
+.panel-filtros .form-select {
+  transition-duration: 160ms;
+}
+
 /* Ficha lateral del proyecto seleccionado */
 .project-detail-panel {
   position: relative;
@@ -1594,3 +1673,6 @@ body.project-detail-open .content-area {
   line-height: 1.35;
   overflow-wrap: anywhere;
 }
+
+.project-detail-title { font-weight: 600; }
+.project-detail-field dt { font-weight: 500; }
