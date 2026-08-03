@@ -1,4 +1,6 @@
-import { initPopupSwiper } from "./carrusel.js";
+const UNAVAILABLE = "No disponible";
+let panelEventsBound = false;
+let previouslyFocusedElement = null;
 
 function sanitize(value) {
   return String(value ?? "")
@@ -9,14 +11,40 @@ function sanitize(value) {
     .replace(/'/g, "&#039;");
 }
 
+function meaningfulValue(...values) {
+  for (const value of values) {
+    if (value === null || value === undefined) {
+      continue;
+    }
+
+    const normalized = String(value).trim();
+    if (normalized && normalized.toLowerCase() !== "null" && normalized.toLowerCase() !== "undefined") {
+      return normalized;
+    }
+  }
+
+  return UNAVAILABLE;
+}
+
 function formatCurrency(value) {
-  const number = Number(value || 0);
-  return `S/ ${number.toLocaleString("es-PE", { maximumFractionDigits: 2 })}`;
+  if (value === null || value === undefined || String(value).trim() === "") {
+    return UNAVAILABLE;
+  }
+
+  if (typeof value === "number" && Number.isFinite(value)) {
+    return `S/ ${value.toLocaleString("es-PE", { maximumFractionDigits: 2 })}`;
+  }
+
+  const text = String(value).trim();
+  const numeric = Number(text);
+  return Number.isFinite(numeric)
+    ? `S/ ${numeric.toLocaleString("es-PE", { maximumFractionDigits: 2 })}`
+    : text;
 }
 
 function getStatusClass(status) {
   const normalized = String(status || "").trim().toLowerCase();
-  if (normalized === "en ejecucion") {
+  if (normalized === "en ejecucion" || normalized === "en ejecución") {
     return "is-running";
   }
   if (normalized === "finalizado") {
@@ -28,125 +56,158 @@ function getStatusClass(status) {
   return "is-unknown";
 }
 
-function hasMeaningfulStatus(status) {
-  const normalized = String(status || "").trim().toLowerCase();
-  return Boolean(normalized) && normalized !== "sin dato" && normalized !== "-";
+function isAllowedImageUrl(value) {
+  const url = String(value || "").trim();
+  if (!url || url.startsWith("//")) {
+    return false;
+  }
+
+  if (/^https?:\/\//i.test(url)) {
+    return true;
+  }
+
+  return !/^[a-z][a-z\d+.-]*:/i.test(url) && !/[<>\"']/g.test(url);
 }
 
 function getImages(properties) {
-  const fallback = [
-    "https://images.unsplash.com/photo-1500382017468-9049fed747ef?auto=format&fit=crop&w=800&q=60",
-    "https://images.unsplash.com/photo-1500937386664-56d1dfef3854?auto=format&fit=crop&w=800&q=60",
-    "https://images.unsplash.com/photo-1472396961693-142e6e269027?auto=format&fit=crop&w=800&q=60"
-  ];
+  return [properties.foto1, properties.foto2, properties.foto3]
+    .map((value) => String(value || "").trim())
+    .filter(isAllowedImageUrl);
+}
 
-  const imgs = [properties.foto1, properties.foto2, properties.foto3]
-    .map((url) => (url ? String(url).trim() : ""))
-    .filter(Boolean);
+function setText(id, value) {
+  const element = document.getElementById(id);
+  if (element) {
+    element.textContent = meaningfulValue(value);
+  }
+}
 
-  return imgs.length ? imgs : fallback;
+function notifyMapResize() {
+  window.dispatchEvent(new Event("resize"));
+  window.setTimeout(() => window.dispatchEvent(new Event("resize")), 180);
+}
+
+function closeProjectDetailPanel({ restoreFocus = true } = {}) {
+  const panel = document.getElementById("project-detail-panel");
+  if (!panel || !panel.classList.contains("is-open")) {
+    return;
+  }
+
+  panel.classList.remove("is-open");
+  panel.setAttribute("aria-hidden", "true");
+  document.body.classList.remove("project-detail-open");
+  notifyMapResize();
+
+  if (restoreFocus && previouslyFocusedElement instanceof HTMLElement) {
+    previouslyFocusedElement.focus({ preventScroll: true });
+  }
+}
+
+function ensurePanelEvents() {
+  if (panelEventsBound) {
+    return;
+  }
+
+  const closeButton = document.getElementById("project-detail-close");
+  if (!closeButton) {
+    return;
+  }
+
+  closeButton.addEventListener("click", () => closeProjectDetailPanel());
+  document.addEventListener("keydown", (event) => {
+    if (event.key === "Escape") {
+      closeProjectDetailPanel();
+    }
+  });
+  panelEventsBound = true;
+}
+
+function renderGallery(images, projectName) {
+  const gallery = document.getElementById("project-detail-gallery");
+  const track = document.getElementById("project-detail-gallery-track");
+  if (!gallery || !track) {
+    return;
+  }
+
+  track.replaceChildren();
+  gallery.hidden = images.length === 0;
+
+  images.forEach((url, index) => {
+    const figure = document.createElement("figure");
+    figure.className = "project-detail-photo";
+
+    const image = document.createElement("img");
+    image.src = url;
+    image.alt = `Fotografía ${index + 1} de ${projectName}`;
+    image.loading = "lazy";
+    image.decoding = "async";
+    image.addEventListener("error", () => {
+      figure.remove();
+      if (!track.children.length) {
+        gallery.hidden = true;
+      }
+    }, { once: true });
+
+    figure.appendChild(image);
+    track.appendChild(figure);
+  });
+}
+
+function openProjectDetailPanel(feature) {
+  const panel = document.getElementById("project-detail-panel");
+  if (!panel) {
+    return;
+  }
+
+  ensurePanelEvents();
+  const properties = feature?.properties || {};
+  const projectName = meaningfulValue(properties.proyecto, properties.nombre_proyecto, properties.nombre);
+  const status = meaningfulValue(properties.estado);
+
+  setText("project-detail-title", projectName);
+  setText("project-detail-province", properties.provincia);
+  setText("project-detail-district", properties.distrito);
+  setText("project-detail-beneficiaries", properties.beneficiarios);
+  setText("project-detail-budget", formatCurrency(properties.presupuesto));
+  setText("project-detail-description", meaningfulValue(properties.descripcion, properties["descripción"]));
+  setText("project-detail-responsible", properties.responsable);
+  setText("project-detail-start-date", meaningfulValue(properties.fecha_inicio, properties.inicio, properties.fecha_ini));
+  setText(
+    "project-detail-end-date",
+    meaningfulValue(properties.fecha_fin, properties.culminacion, properties.fecha_culminacion)
+  );
+
+  const statusElement = document.getElementById("project-detail-status");
+  if (statusElement) {
+    statusElement.textContent = status;
+    statusElement.className = `project-detail-status ${getStatusClass(status)}`;
+  }
+
+  renderGallery(getImages(properties), projectName);
+  previouslyFocusedElement = document.activeElement;
+  panel.classList.add("is-open");
+  panel.setAttribute("aria-hidden", "false");
+  document.body.classList.add("project-detail-open");
+  notifyMapResize();
+
+  window.setTimeout(() => {
+    document.getElementById("project-detail-close")?.focus({ preventScroll: true });
+  }, 180);
 }
 
 export function buildProjectPopup(feature) {
-  const p = feature?.properties || {};
-  const popupId = `swiper-${Date.now()}-${Math.floor(Math.random() * 10000)}`;
-  const images = getImages(p);
-  const projectName = p.nombre_proyecto || p.proyecto || "Proyecto sin nombre";
-  const district = p.distrito || "-";
-  const province = p.provincia || "-";
-  const sector = p.sector || p.localidad || p.comunidad || "-";
-  const status = p.estado || "";
-  const beneficiaries = p.beneficiarios ?? "Sin dato";
-  const budget = p.presupuesto != null ? formatCurrency(p.presupuesto) : "Sin dato";
-  const statusClass = getStatusClass(status);
-  const statusBadge = hasMeaningfulStatus(status)
-    ? `<span class="popup-status ${statusClass}">${sanitize(status)}</span>`
-    : "";
-
-  const slides = images
-    .map((img) => `<div class="swiper-slide"><img src="${sanitize(img)}" alt="Foto del proyecto"></div>`)
-    .join("");
+  const properties = feature?.properties || {};
+  const projectName = meaningfulValue(properties.proyecto, properties.nombre_proyecto, properties.nombre);
+  openProjectDetailPanel(feature);
 
   return `
-    <article class="popup-project">
-      <header class="popup-header">
-        <h3 class="popup-title">${sanitize(projectName)}</h3>
-        ${statusBadge}
-      </header>
-
-      <div class="popup-grid">
-        <div class="popup-row">
-          <span class="popup-label">Provincia</span>
-          <span class="popup-value">${sanitize(province)}</span>
-        </div>
-        <div class="popup-row">
-          <span class="popup-label">Distrito</span>
-          <span class="popup-value">${sanitize(district)}</span>
-        </div>
-        <div class="popup-row">
-          <span class="popup-label">Sector</span>
-          <span class="popup-value">${sanitize(sector)}</span>
-        </div>
-        <div class="popup-row">
-          <span class="popup-label">Beneficiarios</span>
-          <span class="popup-value">${sanitize(beneficiaries)}</span>
-        </div>
-        <div class="popup-row">
-          <span class="popup-label">Presupuesto</span>
-          <span class="popup-value">${sanitize(budget)}</span>
-        </div>
-      </div>
-
-      <div class="popup-media-section">
-        <button type="button" class="popup-media-toggle" data-popup-toggle="gallery" aria-expanded="false">
-          Ver fotos
-        </button>
-
-        <div class="popup-media-panel" data-popup-gallery>
-          <div id="${popupId}" class="swiper popup-swiper">
-            <div class="swiper-wrapper">${slides}</div>
-            <div class="swiper-pagination"></div>
-            <div class="swiper-button-prev"></div>
-            <div class="swiper-button-next"></div>
-          </div>
-        </div>
-      </div>
-    </article>
+    <div class="popup-selection-indicator" role="status">
+      <span>Proyecto seleccionado</span>
+      <strong>${sanitize(projectName)}</strong>
+    </div>
   `;
 }
 
 export function initPopupCarouselFromElement(rootElement) {
-  if (!rootElement) {
-    return;
-  }
-
-  const toggleButton = rootElement.querySelector('[data-popup-toggle="gallery"]');
-  const mediaPanel = rootElement.querySelector("[data-popup-gallery]");
-  const swiperContainer = rootElement.querySelector(".popup-swiper");
-
-  if (!toggleButton || !mediaPanel || !swiperContainer || !swiperContainer.id) {
-    return;
-  }
-
-  let swiperInstance = null;
-
-  const ensureSwiper = () => {
-    if (!swiperInstance) {
-      swiperInstance = initPopupSwiper(`#${swiperContainer.id}`);
-    }
-
-    if (swiperInstance?.update) {
-      swiperInstance.update();
-    }
-  };
-
-  toggleButton.addEventListener("click", () => {
-    const isOpen = mediaPanel.classList.toggle("is-open");
-    toggleButton.setAttribute("aria-expanded", String(isOpen));
-    toggleButton.textContent = isOpen ? "Ocultar fotos" : "Ver fotos";
-
-    if (isOpen) {
-      ensureSwiper();
-    }
-  });
+  rootElement?.classList.add("has-selection-indicator");
 }

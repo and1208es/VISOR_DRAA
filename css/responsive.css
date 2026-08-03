@@ -1,229 +1,364 @@
-@media (max-width: 1199px) {
-  .main-layout {
-    grid-template-columns: 280px 1fr;
-  }
-
-  .map-wrapper {
-    min-height: 390px;
-  }
-
-  #map {
-    min-height: 390px;
-  }
-}
-
-@media (min-width: 992px) {
+/* Escritorio: panel fijo y mapa en el espacio restante */
+@media (min-width: 1025px) {
   .sidebar.offcanvas,
   .sidebar.offcanvas.show,
   .sidebar.offcanvas.showing,
   .sidebar.offcanvas.hiding {
     position: static;
     inset: auto;
-    transform: none;
-    visibility: visible;
     width: auto;
     height: auto;
-    border-right: 1px solid var(--line);
+    visibility: visible;
+    transform: none;
+    transition: none;
   }
 
-  .sidebar.offcanvas .offcanvas-header {
+  .sidebar .offcanvas-header,
+  .sidebar-toggle {
     display: none;
   }
 }
 
-@media (max-width: 991px) {
-  .app-shell {
-    min-height: 100dvh;
-    height: 100dvh;
+@media (min-width: 1025px) and (max-height: 820px) {
+  .sidebar-content { padding-top: 0.55rem; padding-bottom: 0.65rem; }
+  .panel-block { padding-top: 0.55rem; padding-bottom: 0.6rem; }
+  .panel-block:first-child { padding-top: 0; }
+  .panel-title { margin-bottom: 0.48rem; }
+  .stat-card { min-height: 52px; padding-top: 0.4rem; padding-bottom: 0.4rem; }
+  .stat-card-budget { min-height: 44px; }
+  .panel-filtros .mb-2 { margin-bottom: 0.3rem !important; }
+  .panel-filtros .mb-3 { margin-bottom: 0.45rem !important; }
+  .panel-filtros .form-select,
+  .filter-actions .btn { min-height: 32px; }
+  .panel-capas .form-check { min-height: 31px; }
+}
+
+/* Tablet: panel Bootstrap off-canvas */
+@media (max-width: 1024px) {
+  :root {
+    --header-height: 68px;
   }
 
   .main-layout {
-    display: flex;
-    flex-direction: column;
-    flex: 1 1 auto;
-    height: 100%;
-    min-height: 0;
-    overflow: hidden;
+    display: block;
   }
 
-  .sidebar {
-    width: min(88vw, 340px);
+  .sidebar-toggle {
+    display: inline-flex;
+    flex: 0 0 auto;
+    min-width: 82px;
+    min-height: 42px;
   }
 
-  .content-area {
-    display: flex;
-    flex-direction: column;
-    flex: 1 1 auto;
-    min-height: 0;
-    height: 100%;
-    overflow: hidden;
+  .sidebar.offcanvas {
+    z-index: 1055;
+    width: min(88vw, 360px);
+    height: 100dvh;
+    background: var(--surface-soft);
+    border-right: 0;
+    border-radius: 0 var(--radius-lg) var(--radius-lg) 0;
+    box-shadow: 18px 0 46px rgba(5, 42, 30, 0.24);
   }
 
-  .map-wrapper {
-    margin: 0.6rem;
-    flex: 1 1 auto;
-    min-height: 320px;
-    height: 100%;
+  .sidebar .offcanvas-header {
+    min-height: 64px;
+    padding: 0.85rem 1rem;
+    color: #fff;
+    background: var(--brand-900);
+    border-bottom: 2px solid var(--gold-500);
   }
 
+  .sidebar .offcanvas-title {
+    font-family: "Montserrat", sans-serif;
+    font-size: 0.95rem;
+    font-weight: 700;
+  }
+
+  .sidebar .btn-close {
+    filter: invert(1) grayscale(1) brightness(2);
+  }
+
+  .sidebar-content {
+    height: calc(100dvh - 64px);
+    padding: 0.85rem 1rem 1.2rem;
+  }
+
+  .panel-capas .form-check,
+  .panel-filtros .form-select,
+  .filter-actions .btn {
+    min-height: 44px;
+  }
+
+  .panel-capas .form-check-input {
+    width: 1.2rem;
+    height: 1.2rem;
+  }
+
+  .content-area,
+  .map-wrapper,
   #map {
-    min-height: 100%;
-    height: 100%;
     width: 100%;
-    position: relative;
-    inset: auto;
+    height: 100%;
   }
 
-  .charts-row {
-    padding-top: 0.5rem;
-  }
-}
+  .content-area { display: block; }
 
-@media (max-width: 576px) {
-  .brand-badge {
-    width: 48px;
-    height: 48px;
-    border-radius: 10px;
+  body.project-detail-open .content-area {
+    display: block;
   }
 
-  .brand-logo {
-    border-radius: 7px;
+  .project-detail-panel {
+    position: fixed;
+    top: var(--header-height);
+    right: 0;
+    bottom: 0;
+    width: min(380px, 90vw);
+    height: auto;
+    border-left: 1px solid var(--border);
   }
 
-  .brand-text {
-    font-size: 0.78rem;
+  .offcanvas-backdrop {
+    background-color: var(--brand-950);
   }
 
-  .kpi-value {
-    font-size: 1.25rem;
+  .offcanvas-backdrop.show { opacity: 0.5; }
+
+  .map-floating-title {
+    top: 14px;
+    left: 58px;
+    max-width: min(390px, calc(100% - 125px));
   }
 
-  .small-value {
-    font-size: 0.92rem;
-  }
-
-  .chart-card {
-    min-height: 220px;
-  }
-
-  .province-panel-header {
-    row-gap: 0.45rem;
-  }
-
-  .province-panel-actions {
-    justify-content: flex-end;
-  }
-
-  .panel-btn {
-    width: 32px;
-    height: 30px;
-    padding: 0;
-  }
-
-  .panel-btn-icon {
-    width: 16px;
-    height: 16px;
-    font-size: 0.74rem;
-  }
-
-  .province-panel-title {
-    font-size: 1.02rem;
-  }
-
-  .province-panel-subtitle {
-    font-size: 0.74rem;
-  }
-
-  .panel-capas .form-check {
-    padding: 0.24rem 0.28rem;
-    gap: 0.45rem;
-  }
-
-  .layer-label {
-    font-size: 0.92rem;
-  }
-
-  .leaflet-popup-content {
-    min-width: 0;
-    width: min(76vw, 300px);
-    max-width: 76vw;
-  }
-
-  .popup-project {
-    font-size: 0.84rem;
-    padding: 0.68rem;
-  }
-
-  .popup-title {
-    font-size: 0.86rem;
-  }
-
-  .popup-row {
-    grid-template-columns: 84px minmax(0, 1fr);
-    gap: 0.4rem;
-  }
-
-  .popup-swiper .swiper-slide {
-    height: 144px;
+  .province-project-panel {
+    top: 12px;
+    right: 12px;
+    width: min(350px, calc(100% - 24px));
+    max-height: min(58%, 480px);
   }
 }
 
-@media (max-width: 420px) {
+/* Celular: mapa dominante y acceso flotante al panel */
+@media (max-width: 767px) {
+  :root {
+    --header-height: 60px;
+  }
+
+  html,
+  body,
+  .app-shell,
+  .main-layout,
+  .content-area,
+  .map-wrapper,
+  #map {
+    max-width: 100%;
+  }
+
+  html,
+  body {
+    overflow-x: hidden;
+  }
+
+  .topbar {
+    border-bottom-width: 2px;
+  }
+
   .topbar .container-fluid {
-    row-gap: 0.35rem;
-    padding-top: 0.5rem;
-    padding-bottom: 0.5rem;
+    padding-right: 0.65rem !important;
+    padding-left: 0.65rem !important;
   }
 
-  .brand-text {
-    font-size: 0.72rem;
-    line-height: 1.15;
+  .institutional-brand {
+    max-width: calc(100vw - 20px);
+    gap: 0.55rem;
   }
 
-  .date-pill {
-    padding: 0.2rem 0.55rem;
-    font-size: 0.82rem;
+  .brand-badge {
+    flex-basis: 44px;
+    width: 44px;
+    height: 44px;
+    padding: 2px;
+    border-radius: 8px;
   }
 
-  .map-wrapper {
-    min-height: 240px;
+  .brand-logo { border-radius: 6px; }
+
+  .brand-copy { max-width: calc(100vw - 78px); }
+
+  .brand-title {
+    font-size: 0.76rem;
   }
+
+  .brand-subtitle {
+    margin-top: 0.16rem;
+    font-size: 0.64rem;
+    letter-spacing: 0;
+  }
+
+  .header-meta { display: none; }
+
+  .sidebar-toggle {
+    position: fixed;
+    right: auto;
+    bottom: max(76px, calc(env(safe-area-inset-bottom) + 64px));
+    left: 50%;
+    z-index: 1035;
+    min-width: 108px;
+    min-height: 44px;
+    margin: 0 !important;
+    padding: 0.45rem 0.9rem;
+    color: #fff;
+    background: var(--brand-900);
+    border-color: rgba(255, 255, 255, 0.75);
+    border-radius: 999px;
+    box-shadow: 0 10px 28px rgba(5, 48, 33, 0.3);
+    transform: translateX(-50%);
+  }
+
+  .sidebar-toggle:hover,
+  .sidebar-toggle:focus {
+    color: #fff;
+    background: var(--brand-700);
+    transform: translateX(-50%) translateY(-2px);
+  }
+
+  body:has(.sidebar.show) .sidebar-toggle {
+    visibility: hidden;
+    opacity: 0;
+    pointer-events: none;
+  }
+
+  body.project-detail-open .sidebar-toggle {
+    visibility: hidden;
+    opacity: 0;
+    pointer-events: none;
+  }
+
+  .project-detail-panel {
+    top: auto;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    max-width: none;
+    height: min(70dvh, 590px);
+    max-height: 70dvh;
+    border-top: 3px solid var(--gold-500);
+    border-left: 0;
+    border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+    box-shadow: 0 -14px 38px rgba(8, 52, 37, 0.2);
+    transform: translateY(100%);
+  }
+
+  .project-detail-panel.is-open { transform: translateY(0); }
+
+  .project-detail-header {
+    padding: 0.85rem 3.7rem 0.8rem 1rem;
+    border-bottom-width: 2px;
+  }
+
+  .project-detail-header::before {
+    position: absolute;
+    top: 0.4rem;
+    left: 50%;
+    width: 42px;
+    height: 4px;
+    content: "";
+    background: rgba(255, 255, 255, 0.55);
+    border-radius: 999px;
+    transform: translateX(-50%);
+  }
+
+  .project-detail-kicker { margin-top: 0.25rem; }
+  .project-detail-title { font-size: 0.9rem; }
+  .project-detail-close { top: 0.55rem; right: 0.65rem; width: 44px; height: 44px; }
+  .project-detail-scroll { padding: 0.85rem 1rem max(1rem, env(safe-area-inset-bottom)); }
+  .project-detail-photo { height: min(30vh, 180px); }
+
+  .sidebar.offcanvas { width: min(92vw, 360px); }
+
+  .statistics-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .stat-card { min-height: 64px; }
+  .stat-card-budget { grid-column: 1 / -1; }
+
+  .filter-actions { grid-template-columns: 1fr; }
+
+  .map-floating-title {
+    display: none;
+  }
+
+  .leaflet-left { left: 4px; }
+  .leaflet-right { right: 4px; }
+  .leaflet-top { top: 4px; }
+  .leaflet-bottom { bottom: 4px; }
+
+  .province-project-panel {
+    top: auto;
+    right: 7px;
+    bottom: 7px;
+    width: calc(100% - 14px);
+    max-height: 50%;
+    border-radius: var(--radius-md);
+  }
+
+  .province-panel-header { padding: 0.65rem 0.72rem; }
+  .province-panel-body { padding: 0.55rem; }
 
   .leaflet-popup-content {
-    width: min(84vw, 270px);
-    max-width: 84vw;
+    width: min(82vw, 310px);
+    min-width: 0;
+    max-width: 82vw;
   }
 
   .popup-project {
+    padding: 0.72rem;
     font-size: 0.8rem;
-    padding: 0.58rem;
   }
 
-  .popup-header {
-    gap: 0.4rem;
-    margin-bottom: 0.45rem;
+  .popup-header { gap: 0.4rem; }
+  .popup-title { font-size: 0.84rem; }
+  .popup-row { grid-template-columns: 82px minmax(0, 1fr); gap: 0.4rem; }
+  .popup-swiper .swiper-slide { height: 142px; }
+  .popup-media-panel.is-open { max-height: 230px; }
+}
+
+@media (min-width: 768px) and (max-width: 860px) {
+  .header-meta {
+    display: none;
+  }
+}
+
+/* Pantallas pequeñas */
+@media (max-width: 479px) {
+  .brand-badge {
+    flex-basis: 40px;
+    width: 40px;
+    height: 40px;
   }
 
-  .popup-title {
-    font-size: 0.8rem;
-    line-height: 1.2;
+  .brand-copy { max-width: calc(100vw - 68px); }
+  .brand-title { font-size: 0.7rem; }
+  .brand-subtitle { font-size: 0.59rem; }
+
+  .leaflet-popup-content {
+    width: min(86vw, 285px);
+    max-width: 86vw;
   }
 
-  .popup-status {
-    font-size: 0.66rem;
-    padding: 0.16rem 0.42rem;
-  }
+  .popup-project { padding: 0.62rem; }
+  .popup-row { grid-template-columns: 76px minmax(0, 1fr); }
+  .popup-swiper .swiper-slide { height: 126px; }
+}
 
-  .popup-grid {
-    padding: 0.45rem 0.48rem;
-  }
-
-  .popup-row {
-    grid-template-columns: 78px minmax(0, 1fr);
-    gap: 0.34rem;
-  }
-
-  .popup-swiper .swiper-slide {
-    height: 126px;
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    scroll-behavior: auto !important;
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
   }
 }

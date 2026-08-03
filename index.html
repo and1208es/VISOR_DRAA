@@ -23,56 +23,73 @@
   <div class="app-shell">
     <header class="topbar navbar navbar-expand-lg navbar-dark">
       <div class="container-fluid px-3">
-        <button class="btn btn-outline-light d-lg-none me-2" type="button" data-bs-toggle="offcanvas" data-bs-target="#sidebar" aria-controls="sidebar">
-          Panel
+        <button class="btn sidebar-toggle me-2" type="button" data-bs-toggle="offcanvas" data-bs-target="#sidebar" aria-controls="sidebar" aria-expanded="false" aria-label="Abrir panel de capas y filtros">
+          <span class="sidebar-toggle-icon" aria-hidden="true"></span>
+          <span>Panel</span>
         </button>
-        <a class="navbar-brand d-flex align-items-center gap-2" href="#">
+        <a class="navbar-brand institutional-brand" href="#" aria-label="Dirección Regional de Agricultura Ayacucho">
           <span class="brand-badge" aria-hidden="true">
             <img src="assets/img/logo_draa.jpg" alt="Logo DRAA" class="brand-logo">
           </span>
-          <span class="brand-text">Visor de proyectos DRA - Ayacucho</span>
+          <span class="brand-copy">
+            <strong class="brand-title">Dirección Regional de Agricultura Ayacucho</strong>
+            <span class="brand-subtitle">Geoportal de Proyectos Productivos</span>
+          </span>
         </a>
-        <div class="d-flex align-items-center gap-2 text-light small">
+        <div class="header-meta text-light">
           <span id="fecha-actual" class="date-pill"></span>
         </div>
       </div>
     </header>
 
     <main class="main-layout">
-      <aside class="sidebar offcanvas offcanvas-lg offcanvas-start" tabindex="-1" id="sidebar" aria-labelledby="sidebarLabel">
-        <div class="offcanvas-header d-lg-none">
-          <h5 class="offcanvas-title" id="sidebarLabel">Panel SIG</h5>
-          <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+      <aside class="sidebar offcanvas offcanvas-start" tabindex="-1" id="sidebar" aria-labelledby="sidebarLabel">
+        <div class="offcanvas-header">
+          <h5 class="offcanvas-title" id="sidebarLabel">Panel del geoportal</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Cerrar panel"></button>
         </div>
 
         <div class="sidebar-content">
-          <section class="panel-block panel-capas">
-            <h2 class="panel-title">Capas</h2>
-            <div class="form-check">
-              <input class="form-check-input layer-toggle" type="checkbox" id="lyr-provincias" data-layer="provincias" checked>
-              <label class="form-check-label layer-label" for="lyr-provincias">
-                <span>Provincias</span>
-                <span class="layer-color-chip layer-color-provincias" aria-hidden="true"></span>
-              </label>
+          <section class="panel-block panel-statistics" aria-labelledby="statistics-title">
+            <h2 class="panel-title" id="statistics-title">
+              <svg class="panel-title-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20V10m6 10V4m6 16v-7m4 7H2"/></svg>
+              <span>Resumen regional</span>
+            </h2>
+            <div class="statistics-grid" aria-live="polite">
+              <article class="stat-card stat-card-projects">
+                <svg class="stat-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16v12H4zM8 7V4h8v3M8 12h8m-8 3h5"/></svg>
+                <span class="stat-label">Proyectos</span>
+                <strong class="stat-value" id="stat-projects">—</strong>
+              </article>
+              <article class="stat-card stat-card-provinces">
+                <svg class="stat-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m5 5 5-2 4 2 5-2v16l-5 2-4-2-5 2V5Zm5-2v16m4-14v16"/></svg>
+                <span class="stat-label">Provincias</span>
+                <strong class="stat-value" id="stat-provinces">—</strong>
+              </article>
+              <article class="stat-card stat-card-districts">
+                <svg class="stat-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 21h18M5 21V9l7-5 7 5v12M9 21v-6h6v6"/></svg>
+                <span class="stat-label">Distritos</span>
+                <strong class="stat-value" id="stat-districts">—</strong>
+              </article>
+              <article class="stat-card stat-card-beneficiaries">
+                <svg class="stat-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8Zm7-1a3 3 0 1 0 0-6m-7 9c-4 0-7 2-7 5v2h14v-2c0-3-3-5-7-5Zm8-.2c3 .5 5 2.2 5 4.7V20h-3"/></svg>
+                <span class="stat-label">Beneficiarios</span>
+                <strong class="stat-value" id="stat-beneficiaries">—</strong>
+              </article>
+              <article class="stat-card stat-card-budget">
+                <svg class="stat-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 7h18v12H3zM3 10h18M7 15h3m7 0h.01M7 7V5h10v2"/></svg>
+                <span class="stat-label">Presupuesto total</span>
+                <strong class="stat-value stat-value-budget" id="stat-budget">—</strong>
+              </article>
             </div>
-            <div class="form-check">
-              <input class="form-check-input layer-toggle" type="checkbox" id="lyr-distritos" data-layer="distritos" checked>
-              <label class="form-check-label layer-label" for="lyr-distritos">
-                <span>Distritos</span>
-                <span class="layer-color-chip layer-color-distritos" aria-hidden="true"></span>
-              </label>
-            </div>
-            <div class="form-check">
-              <input class="form-check-input layer-toggle" type="checkbox" id="lyr-proyectos" data-layer="proyectos" checked>
-              <label class="form-check-label layer-label" for="lyr-proyectos">
-                <span>Proyectos productivos</span>
-                <span class="layer-color-chip layer-color-proyectos" aria-hidden="true"></span>
-              </label>
-            </div>
+            <p class="statistics-note">Datos consolidados de los proyectos registrados</p>
           </section>
 
           <section class="panel-block panel-filtros">
-            <h2 class="panel-title">Filtros</h2>
+            <h2 class="panel-title">
+              <svg class="panel-title-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 5h18l-7 8v6l-4 2v-8L3 5Z"/></svg>
+              <span>Filtrar proyectos</span>
+            </h2>
             <div class="mb-2">
               <label for="filtro-provincia" class="form-label">Provincia</label>
               <select id="filtro-provincia" class="form-select form-select-sm">
@@ -101,8 +118,36 @@
               </select>
             </div>
             <div class="d-grid gap-2 filter-actions">
-              <button id="btn-aplicar-filtros" class="btn btn-success btn-sm">Aplicar filtros</button>
-              <button id="btn-limpiar-filtros" class="btn btn-outline-secondary btn-sm">Limpiar filtros</button>
+              <button id="btn-aplicar-filtros" class="btn btn-success btn-sm"><span class="button-icon icon-filter" aria-hidden="true"></span>Aplicar filtros</button>
+              <button id="btn-limpiar-filtros" class="btn btn-outline-secondary btn-sm"><span class="button-icon icon-reset" aria-hidden="true"></span>Limpiar filtros</button>
+            </div>
+          </section>
+
+          <section class="panel-block panel-capas">
+            <h2 class="panel-title">
+              <svg class="panel-title-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m12 3 9 5-9 5-9-5 9-5Zm-7 9 7 4 7-4m-14 5 7 4 7-4"/></svg>
+              <span>Capas del mapa</span>
+            </h2>
+            <div class="form-check">
+              <input class="form-check-input layer-toggle" type="checkbox" id="lyr-provincias" data-layer="provincias" checked>
+              <label class="form-check-label layer-label" for="lyr-provincias">
+                <span>Provincias</span>
+                <span class="layer-color-chip layer-color-provincias" aria-hidden="true"></span>
+              </label>
+            </div>
+            <div class="form-check">
+              <input class="form-check-input layer-toggle" type="checkbox" id="lyr-distritos" data-layer="distritos" checked>
+              <label class="form-check-label layer-label" for="lyr-distritos">
+                <span>Distritos</span>
+                <span class="layer-color-chip layer-color-distritos" aria-hidden="true"></span>
+              </label>
+            </div>
+            <div class="form-check">
+              <input class="form-check-input layer-toggle" type="checkbox" id="lyr-proyectos" data-layer="proyectos" checked>
+              <label class="form-check-label layer-label" for="lyr-proyectos">
+                <span>Proyectos productivos</span>
+                <span class="layer-color-chip layer-color-proyectos" aria-hidden="true"></span>
+              </label>
             </div>
           </section>
 
@@ -112,6 +157,10 @@
       <section class="content-area">
         <div class="map-wrapper">
           <div id="map" aria-label="Mapa interactivo del geoportal"></div>
+          <div class="map-floating-title" aria-hidden="true">
+            <span class="map-floating-kicker">Geoportal regional</span>
+            <strong>Proyectos productivos de la región Ayacucho</strong>
+          </div>
 
           <section id="province-project-panel" class="province-project-panel is-hidden" aria-label="Lista de proyectos por provincia">
             <header class="province-panel-header">
@@ -133,6 +182,64 @@
             </div>
           </section>
         </div>
+
+        <aside id="project-detail-panel" class="project-detail-panel" role="dialog" aria-modal="false" aria-hidden="true" aria-labelledby="project-detail-title">
+          <header class="project-detail-header">
+            <div class="project-detail-heading">
+              <span class="project-detail-kicker">Proyecto seleccionado</span>
+              <h2 id="project-detail-title" class="project-detail-title">No disponible</h2>
+            </div>
+            <button id="project-detail-close" class="project-detail-close" type="button" aria-label="Cerrar detalle del proyecto">
+              <span aria-hidden="true">×</span>
+            </button>
+          </header>
+
+          <div class="project-detail-scroll">
+            <section id="project-detail-gallery" class="project-detail-gallery" aria-label="Fotografías del proyecto" hidden>
+              <div id="project-detail-gallery-track" class="project-detail-gallery-track"></div>
+            </section>
+
+            <div class="project-detail-status-row">
+              <span id="project-detail-status" class="project-detail-status">No disponible</span>
+            </div>
+
+            <dl class="project-detail-data">
+              <div class="project-detail-field">
+                <dt>Provincia</dt>
+                <dd id="project-detail-province">No disponible</dd>
+              </div>
+              <div class="project-detail-field">
+                <dt>Distrito</dt>
+                <dd id="project-detail-district">No disponible</dd>
+              </div>
+              <div class="project-detail-field">
+                <dt>Beneficiarios</dt>
+                <dd id="project-detail-beneficiaries">No disponible</dd>
+              </div>
+              <div class="project-detail-field">
+                <dt>Presupuesto</dt>
+                <dd id="project-detail-budget">No disponible</dd>
+              </div>
+              <div class="project-detail-field">
+                <dt>Responsable</dt>
+                <dd id="project-detail-responsible">No disponible</dd>
+              </div>
+              <div class="project-detail-field">
+                <dt>Fecha de inicio</dt>
+                <dd id="project-detail-start-date">No disponible</dd>
+              </div>
+              <div class="project-detail-field">
+                <dt>Fecha de finalización</dt>
+                <dd id="project-detail-end-date">No disponible</dd>
+              </div>
+            </dl>
+
+            <section class="project-detail-description" aria-labelledby="project-detail-description-title">
+              <h3 id="project-detail-description-title">Descripción</h3>
+              <p id="project-detail-description">No disponible</p>
+            </section>
+          </div>
+        </aside>
       </section>
     </main>
   </div>
@@ -141,6 +248,132 @@
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/leaflet-search@3.0.9/dist/leaflet-search.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
+
+  <script>
+    (() => {
+      document.addEventListener("DOMContentLoaded", () => {
+        const sidebar = document.getElementById("sidebar");
+        const toggle = document.querySelector('[data-bs-target="#sidebar"]');
+        if (!sidebar) {
+          return;
+        }
+
+        const notifyMapResize = () => {
+          window.dispatchEvent(new Event("resize"));
+          window.setTimeout(() => window.dispatchEvent(new Event("resize")), 360);
+        };
+
+        sidebar.addEventListener("shown.bs.offcanvas", () => {
+          toggle?.setAttribute("aria-expanded", "true");
+          notifyMapResize();
+        });
+        sidebar.addEventListener("hidden.bs.offcanvas", () => {
+          toggle?.setAttribute("aria-expanded", "false");
+          notifyMapResize();
+        });
+        window.addEventListener("orientationchange", notifyMapResize, { passive: true });
+      });
+    })();
+  </script>
+
+  <script>
+    (() => {
+      const statisticIds = [
+        "stat-projects",
+        "stat-provinces",
+        "stat-districts",
+        "stat-beneficiaries",
+        "stat-budget"
+      ];
+
+      const setStatisticsUnavailable = () => {
+        statisticIds.forEach((id) => {
+          const element = document.getElementById(id);
+          if (element) {
+            element.textContent = "Sin datos";
+          }
+        });
+      };
+
+      const parseFlexibleNumber = (value) => {
+        if (typeof value === "number") {
+          return Number.isFinite(value) ? value : 0;
+        }
+
+        if (typeof value !== "string") {
+          return 0;
+        }
+
+        let normalized = value.trim().replace(/[^\d,.-]/g, "");
+        if (!normalized) {
+          return 0;
+        }
+
+        const lastComma = normalized.lastIndexOf(",");
+        const lastDot = normalized.lastIndexOf(".");
+
+        if (lastComma >= 0 && lastDot >= 0) {
+          normalized = lastComma > lastDot
+            ? normalized.replace(/\./g, "").replace(",", ".")
+            : normalized.replace(/,/g, "");
+        } else if (lastComma >= 0) {
+          const commaGroups = normalized.split(",");
+          normalized = commaGroups.length > 2 || commaGroups.at(-1).length === 3
+            ? commaGroups.join("")
+            : normalized.replace(",", ".");
+        } else if (lastDot >= 0) {
+          const dotGroups = normalized.split(".");
+          if (dotGroups.length > 2 || dotGroups.at(-1).length === 3) {
+            normalized = dotGroups.join("");
+          }
+        }
+
+        const parsed = Number(normalized);
+        return Number.isFinite(parsed) ? parsed : 0;
+      };
+
+      const uniqueValues = (features, propertyName) => new Set(
+        features
+          .map((feature) => String(feature?.properties?.[propertyName] ?? "").trim().toLocaleLowerCase("es"))
+          .filter(Boolean)
+      ).size;
+
+      document.addEventListener("DOMContentLoaded", async () => {
+        try {
+          const response = await fetch("./data/proyectos.geojson");
+          if (!response.ok) {
+            throw new Error(`HTTP ${response.status}`);
+          }
+
+          const geojson = await response.json();
+          const features = Array.isArray(geojson?.features) ? geojson.features : [];
+          const beneficiaries = features.reduce(
+            (total, feature) => total + parseFlexibleNumber(feature?.properties?.beneficiarios),
+            0
+          );
+          const budget = features.reduce(
+            (total, feature) => total + parseFlexibleNumber(feature?.properties?.presupuesto),
+            0
+          );
+          const integerFormat = new Intl.NumberFormat("es-PE", { maximumFractionDigits: 0 });
+          const currencyFormat = new Intl.NumberFormat("es-PE", {
+            style: "currency",
+            currency: "PEN",
+            maximumFractionDigits: 0
+          });
+
+          document.getElementById("stat-projects").textContent = integerFormat.format(features.length);
+          document.getElementById("stat-provinces").textContent = integerFormat.format(uniqueValues(features, "provincia"));
+          document.getElementById("stat-districts").textContent = integerFormat.format(uniqueValues(features, "distrito"));
+          document.getElementById("stat-beneficiaries").textContent = integerFormat.format(beneficiaries);
+          document.getElementById("stat-budget").textContent = currencyFormat.format(budget);
+        } catch (error) {
+          console.error("No se pudieron calcular las estadísticas desde ./data/proyectos.geojson.", error);
+          setStatisticsUnavailable();
+        }
+      });
+    })();
+  </script>
 
   <script>
     window.DRAA_CONFIG = {
