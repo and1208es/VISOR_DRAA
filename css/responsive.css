@@ -38,8 +38,8 @@
   .panel-filtros .mb-2 { margin-bottom: 0.3rem !important; }
   .panel-filtros .mb-3 { margin-bottom: 0.45rem !important; }
   .panel-filtros .form-select,
-  .filter-actions .btn { min-height: 32px; }
-  .panel-capas .form-check { min-height: 31px; }
+  .filter-actions .btn { min-height: 44px; }
+  .panel-capas .form-check { min-height: 44px; }
 }
 
 /* Tablet: panel Bootstrap off-canvas */
@@ -63,7 +63,7 @@
 
   .sidebar.offcanvas {
     z-index: 1055;
-    width: min(88vw, 360px);
+    width: min(88vw, 340px);
     height: 100dvh;
     background: var(--surface-soft);
     border-right: 0;
@@ -299,7 +299,7 @@
   .project-detail-scroll { padding: 0.85rem 1rem max(1rem, env(safe-area-inset-bottom)); }
   .project-detail-photo { height: min(30vh, 180px); }
 
-  .sidebar.offcanvas { width: min(92vw, 360px); }
+  .sidebar.offcanvas { width: min(88vw, 340px); }
 
   .statistics-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -308,7 +308,7 @@
   .stat-card { min-height: 64px; }
   .stat-card-budget { grid-column: 1 / -1; }
 
-  .filter-actions { grid-template-columns: 1fr; }
+  .filter-actions { grid-template-columns: 1fr 1fr; }
 
   .map-floating-title {
     display: none;
@@ -510,7 +510,7 @@
   body.project-detail-open .coord-control { display: none; }
   body.project-detail-open .leaflet-control-scale { margin-bottom: 4px; }
 
-  .sidebar.offcanvas { width: min(88vw, 350px); }
+  .sidebar.offcanvas { width: min(88vw, 340px); }
 
   .panel-title-icon,
   .stat-icon,
@@ -579,8 +579,10 @@
 
 /* UX responsive del encabezado y panel lateral */
 @media (max-width: 1024px) {
+  .sidebar-dashboard-header { display: none; }
+
   .sidebar.offcanvas {
-    width: min(88vw, 360px);
+    width: min(88vw, 340px);
     border-radius: 0 16px 16px 0;
     box-shadow: 12px 0 32px rgba(9, 47, 36, 0.18);
   }
@@ -629,7 +631,7 @@
 
   .statistics-grid { gap: 8px; }
   .stat-card { min-height: 68px; padding: 10px; }
-  .filter-actions { grid-template-columns: 1fr; }
+  .filter-actions { grid-template-columns: 1fr 1fr; }
   .filter-actions .btn { min-height: 44px; }
 }
 
@@ -679,4 +681,5 @@
 
 @media (max-width: 359px) {
   .brand-subtitle { display: none; }
+  .filter-actions { grid-template-columns: 1fr; }
 }

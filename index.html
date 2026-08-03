@@ -46,18 +46,27 @@
     <main class="main-layout">
       <aside class="sidebar offcanvas offcanvas-start" tabindex="-1" id="sidebar" aria-labelledby="sidebarLabel">
         <div class="offcanvas-header">
-          <h5 class="offcanvas-title" id="sidebarLabel">Panel del geoportal</h5>
+          <div class="offcanvas-heading">
+            <span class="sidebar-eyebrow sidebar-eyebrow-inverse">Panel de control</span>
+            <h5 class="offcanvas-title" id="sidebarLabel">Proyectos productivos</h5>
+          </div>
           <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Cerrar panel"></button>
         </div>
 
         <div class="sidebar-content">
-          <button id="desktop-sidebar-hide" class="desktop-sidebar-action desktop-sidebar-hide" type="button" aria-label="Ocultar panel lateral">
-            <span aria-hidden="true">‹</span> Ocultar panel
-          </button>
+          <div class="sidebar-dashboard-header">
+            <div class="sidebar-dashboard-copy">
+              <span class="sidebar-eyebrow">Panel de control</span>
+              <h1 class="sidebar-heading">Proyectos productivos</h1>
+            </div>
+            <button id="desktop-sidebar-hide" class="desktop-sidebar-action desktop-sidebar-hide" type="button" aria-label="Ocultar panel lateral" title="Ocultar panel">
+              <span aria-hidden="true">‹</span>
+            </button>
+          </div>
           <section class="panel-block panel-statistics" aria-labelledby="statistics-title">
             <h2 class="panel-title" id="statistics-title">
               <svg class="panel-title-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20V10m6 10V4m6 16v-7m4 7H2"/></svg>
-              <span>Resumen Ejecutivo</span>
+              <span>Resumen ejecutivo</span>
             </h2>
             <div class="statistics-grid" aria-live="polite">
               <article class="stat-card stat-card-projects">
@@ -101,8 +110,9 @@
           <section class="panel-block panel-filtros">
             <h2 class="panel-title">
               <svg class="panel-title-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 5h18l-7 8v6l-4 2v-8L3 5Z"/></svg>
-              <span>Filtrar proyectos</span>
+              <span>Filtros</span>
             </h2>
+            <p class="panel-description">Acota los proyectos visibles en el mapa.</p>
             <div class="mb-2">
               <label for="filtro-provincia" class="form-label">Provincia</label>
               <select id="filtro-provincia" class="form-select form-select-sm">
@@ -139,7 +149,7 @@
           <section class="panel-block panel-capas">
             <h2 class="panel-title">
               <svg class="panel-title-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m12 3 9 5-9 5-9-5 9-5Zm-7 9 7 4 7-4m-14 5 7 4 7-4"/></svg>
-              <span>Capas del mapa</span>
+              <span>Capas</span>
             </h2>
             <div class="form-check">
               <input class="form-check-input layer-toggle" type="checkbox" id="lyr-provincias" data-layer="provincias" checked>
