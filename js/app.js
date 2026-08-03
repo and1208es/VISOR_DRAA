@@ -23,6 +23,9 @@ const APP_STATE = {
   panelClosed: false
 };
 
+let projectSearchIndex = [];
+let projectSearchMeasurements = { total: 0, count: 0 };
+
 const PROVINCE_DEFAULT_STYLE = {
   color: "#0b4f8a",
   weight: 3,
@@ -91,6 +94,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   addSearchControl(map, projectLayer, "proyecto");
 
   populateFilterOptions(APP_STATE.allProjects, APP_STATE.boundaryCatalog);
+  initSmartProjectSearch(APP_STATE.allProjects);
   bindScrollableFilterSelects();
   bindFilterEvents();
   bindProvinceProjectsPanel();
@@ -342,6 +346,204 @@ function normalizeKey(value) {
     .toLowerCase()
     .normalize("NFD")
     .replace(/[\u0300-\u036f]/g, "");
+}
+
+function getSearchProjectName(properties) {
+  return String(properties?.proyecto || properties?.nombre_proyecto || properties?.nombre || "").trim();
+}
+
+function buildProjectSearchIndex(featureCollection) {
+  return (featureCollection?.features || []).map((feature, index) => {
+    const properties = feature?.properties || {};
+    const name = getSearchProjectName(properties) || "Proyecto sin nombre";
+    const province = String(properties.provincia || "").trim();
+    const district = String(properties.distrito || "").trim();
+    const status = String(properties.estado || "").trim();
+
+    return {
+      id: index,
+      feature,
+      name,
+      province,
+      district,
+      status,
+      searchable: normalizeKey([name, province, district, status].join(" "))
+    };
+  });
+}
+
+function searchProjects(query) {
+  const startedAt = performance.now();
+  const normalizedQuery = normalizeKey(query);
+  const results = [];
+
+  if (normalizedQuery) {
+    for (const item of projectSearchIndex) {
+      if (item.searchable.includes(normalizedQuery)) {
+        results.push(item);
+        if (results.length === 8) {
+          break;
+        }
+      }
+    }
+  }
+
+  const elapsed = performance.now() - startedAt;
+  projectSearchMeasurements.total += elapsed;
+  projectSearchMeasurements.count += 1;
+  const input = document.getElementById("smart-project-search-input");
+  if (input) {
+    input.dataset.lastSearchMs = elapsed.toFixed(3);
+    input.dataset.averageSearchMs = (
+      projectSearchMeasurements.total / projectSearchMeasurements.count
+    ).toFixed(3);
+  }
+
+  return results;
+}
+
+function closeSmartSearchResults() {
+  const input = document.getElementById("smart-project-search-input");
+  const results = document.getElementById("smart-project-search-results");
+  if (results) {
+    results.hidden = true;
+    results.replaceChildren();
+  }
+  input?.setAttribute("aria-expanded", "false");
+}
+
+function renderSmartSearchResults(query) {
+  const container = document.getElementById("smart-project-search-results");
+  const input = document.getElementById("smart-project-search-input");
+  if (!container || !input) {
+    return;
+  }
+
+  const normalizedQuery = normalizeKey(query);
+  container.replaceChildren();
+  if (!normalizedQuery) {
+    closeSmartSearchResults();
+    return;
+  }
+
+  const matches = searchProjects(normalizedQuery);
+  if (!matches.length) {
+    const empty = document.createElement("p");
+    empty.className = "smart-search-empty";
+    empty.textContent = "No se encontraron proyectos.";
+    container.appendChild(empty);
+  } else {
+    matches.forEach((item) => {
+      const button = document.createElement("button");
+      button.type = "button";
+      button.className = "smart-search-result";
+      button.setAttribute("role", "option");
+      button.dataset.searchResultId = String(item.id);
+
+      const name = document.createElement("strong");
+      name.className = "smart-result-name";
+      name.textContent = `🌱 ${item.name}`;
+
+      const location = document.createElement("span");
+      location.className = "smart-result-location";
+      location.textContent = `📍 ${[item.province, item.district].filter(Boolean).join(" - ") || "No disponible"}`;
+
+      const status = document.createElement("span");
+      status.className = "smart-result-status";
+      status.textContent = `🟢 ${item.status || "No disponible"}`;
+
+      button.append(name, location, status);
+      button.addEventListener("click", () => selectSmartSearchResult(item));
+      container.appendChild(button);
+    });
+  }
+
+  container.hidden = false;
+  input.setAttribute("aria-expanded", "true");
+}
+
+function openSelectedProjectPopup(feature) {
+  requestAnimationFrame(() => {
+    let selectedLayer = null;
+    APP_STATE.projectLayer?.eachLayer((layer) => {
+      if (!selectedLayer && layer?.feature === feature) {
+        selectedLayer = layer;
+      }
+    });
+
+    if (!selectedLayer) {
+      return;
+    }
+
+    const target = typeof selectedLayer.getLatLng === "function"
+      ? selectedLayer.getLatLng()
+      : selectedLayer.getBounds?.().getCenter();
+    if (target) {
+      APP_STATE.map.setView(target, Math.max(APP_STATE.map.getZoom(), 14));
+    }
+    selectedLayer.openPopup?.();
+    selectedLayer.bringToFront?.();
+  });
+}
+
+function selectSmartSearchResult(item) {
+  const featureCollection = { type: "FeatureCollection", features: [item.feature] };
+  clearFilterUI();
+  APP_STATE.filteredProjects = featureCollection;
+  APP_STATE.setProjectFeatures(featureCollection);
+  updateExecutiveDashboard(featureCollection, true);
+  updateGeographicContext(item.province, item.district, item.name);
+  closeSmartSearchResults();
+
+  const input = document.getElementById("smart-project-search-input");
+  if (input) {
+    input.value = item.name;
+  }
+  document.getElementById("smart-project-search-clear")?.removeAttribute("hidden");
+  openSelectedProjectPopup(item.feature);
+}
+
+function initSmartProjectSearch(featureCollection) {
+  projectSearchIndex = buildProjectSearchIndex(featureCollection);
+  projectSearchMeasurements = { total: 0, count: 0 };
+
+  const input = document.getElementById("smart-project-search-input");
+  const clearButton = document.getElementById("smart-project-search-clear");
+  const container = document.querySelector(".smart-project-search");
+  if (!input || !clearButton || !container) {
+    return;
+  }
+
+  input.addEventListener("input", () => {
+    clearButton.hidden = !input.value;
+    renderSmartSearchResults(input.value);
+  });
+
+  input.addEventListener("keydown", (event) => {
+    const options = [...document.querySelectorAll(".smart-search-result")];
+    if (event.key === "ArrowDown" && options.length) {
+      event.preventDefault();
+      options[0].focus();
+    } else if (event.key === "Enter" && options.length) {
+      event.preventDefault();
+      options[0].click();
+    } else if (event.key === "Escape") {
+      closeSmartSearchResults();
+    }
+  });
+
+  clearButton.addEventListener("click", () => {
+    input.value = "";
+    clearButton.hidden = true;
+    closeSmartSearchResults();
+    input.focus();
+  });
+
+  document.addEventListener("click", (event) => {
+    if (!container.contains(event.target)) {
+      closeSmartSearchResults();
+    }
+  });
 }
 
 function zoomFromFilters(filters) {
