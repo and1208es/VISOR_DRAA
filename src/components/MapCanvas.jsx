@@ -19,9 +19,9 @@ const BASE_MAPS = {
   osm: "https://tiles.openfreemap.org/styles/bright",
 };
 const DATA_URLS = {
-  provinces: "/data/provincias.geojson",
-  districts: "/data/distritos.geojson",
-  projects: "/data/proyectos.geojson",
+  provincias: `${BASE_URL}data/provincias.geojson`,
+  distritos: `${BASE_URL}data/distritos.geojson`,
+  proyectos: `${BASE_URL}data/proyectos.geojson`,
 };
 const SOURCE_IDS = { provinces: "provinces-source", districts: "districts-source", projects: "projects-source" };
 const LAYER_IDS = {
