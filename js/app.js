@@ -17,6 +17,7 @@ const APP_STATE = {
   map: null,
   overlays: {},
   boundaryCatalog: { provincias: [], distritos: [] },
+  baseLayers: {},
   projectLayer: null,
   setProjectFeatures: null,
   getBoundaryGeoJSON: null,
@@ -63,8 +64,9 @@ const DISTRICT_HIGHLIGHT_STYLE = {
 document.addEventListener("DOMContentLoaded", async () => {
   setCurrentDate();
 
-  const { map } = initMap();
+  const { map, baseLayers } = initMap();
   APP_STATE.map = map;
+  APP_STATE.baseLayers = baseLayers || {};
 
   const {
     overlays,
@@ -91,7 +93,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   updateExecutiveDashboard(APP_STATE.allProjects);
 
   bindMapAndLayerEvents();
-  bindDesktopSidebarToggle();
+  bindGeoToolbar();
   addSearchControl(map, projectLayer, "proyecto");
 
   populateFilterOptions(APP_STATE.allProjects, APP_STATE.boundaryCatalog);
@@ -229,30 +231,126 @@ function bindFilterEvents() {
   });
 }
 
-function bindDesktopSidebarToggle() {
-  const hideButton = document.getElementById("desktop-sidebar-hide");
-  const showButton = document.getElementById("desktop-sidebar-show");
+const GEO_TOOL_PANEL_IDS = [
+  "sidebar",
+  "search-tools-panel",
+  "layers-tools-panel",
+  "legend-tools-panel",
+  "info-tools-panel",
+  "basemap-tools-panel"
+];
+
+function closeGeoToolPanels({ restoreFocus = false } = {}) {
+  let activeButton = null;
+
+  GEO_TOOL_PANEL_IDS.forEach((panelId) => {
+    const panel = document.getElementById(panelId);
+    if (!panel) return;
+    panel.classList.remove("is-open");
+    panel.setAttribute("aria-hidden", "true");
+
+    const button = panelId === "sidebar"
+      ? document.getElementById("desktop-sidebar-show")
+      : document.querySelector(`[data-tool-target="${panelId}"]`);
+    if (button?.getAttribute("aria-expanded") === "true") activeButton = button;
+    button?.setAttribute("aria-expanded", "false");
+    button?.classList.remove("is-active");
+  });
+
+  const backdrop = document.getElementById("geo-tool-backdrop");
+  if (backdrop) backdrop.hidden = true;
+  const toolbar = document.querySelector(".geo-toolbar");
+  toolbar?.classList.remove("tools-expanded");
+  const moreButton = document.getElementById("geo-tool-more");
+  moreButton?.setAttribute("aria-expanded", "false");
+  moreButton?.classList.remove("is-active");
+  requestAnimationFrame(() => APP_STATE.map?.invalidateSize({ pan: false }));
+  if (restoreFocus) activeButton?.focus({ preventScroll: true });
+}
+
+function bindGeoToolbar() {
   const map = APP_STATE.map;
-  if (!hideButton || !showButton || !map) {
-    return;
-  }
+  const mainButton = document.getElementById("desktop-sidebar-show");
+  const closeMain = document.getElementById("desktop-sidebar-hide");
+  const backdrop = document.getElementById("geo-tool-backdrop");
+  const toolbar = document.querySelector(".geo-toolbar");
 
-  const resizeMap = () => {
-    requestAnimationFrame(() => map.invalidateSize({ pan: false }));
-    window.setTimeout(() => map.invalidateSize({ pan: false }), 180);
+  const openPanel = (panelId, button) => {
+    const panel = document.getElementById(panelId);
+    if (!panel) return;
+    const willOpen = !panel.classList.contains("is-open");
+    closeGeoToolPanels();
+    if (!willOpen) return;
+
+    panel.classList.add("is-open");
+    panel.setAttribute("aria-hidden", "false");
+    button?.setAttribute("aria-expanded", "true");
+    button?.classList.add("is-active");
+    if (backdrop) backdrop.hidden = false;
+    window.setTimeout(() => {
+      map?.invalidateSize({ pan: false });
+      panel.querySelector("input, select, button")?.focus({ preventScroll: true });
+    }, 140);
   };
 
-  const setCollapsed = (collapsed) => {
-    document.body.classList.toggle("desktop-sidebar-collapsed", collapsed);
-    showButton.hidden = !collapsed;
-    hideButton.setAttribute("aria-expanded", String(!collapsed));
-    showButton.setAttribute("aria-expanded", String(collapsed));
-    resizeMap();
-    (collapsed ? showButton : hideButton).focus({ preventScroll: true });
-  };
+  mainButton?.addEventListener("click", () => openPanel("sidebar", mainButton));
+  closeMain?.addEventListener("click", () => closeGeoToolPanels({ restoreFocus: true }));
+  document.querySelectorAll("[data-tool-target]").forEach((button) => {
+    button.addEventListener("click", () => openPanel(button.dataset.toolTarget, button));
+  });
+  document.querySelectorAll("[data-close-tool-panel]").forEach((button) => {
+    button.addEventListener("click", () => closeGeoToolPanels({ restoreFocus: true }));
+  });
+  backdrop?.addEventListener("click", () => closeGeoToolPanels());
 
-  hideButton.addEventListener("click", () => setCollapsed(true));
-  showButton.addEventListener("click", () => setCollapsed(false));
+  document.getElementById("geo-tool-more")?.addEventListener("click", (event) => {
+    const expanded = toolbar?.classList.toggle("tools-expanded") || false;
+    event.currentTarget.setAttribute("aria-expanded", String(expanded));
+    event.currentTarget.classList.toggle("is-active", expanded);
+  });
+
+  document.getElementById("geo-tool-home")?.addEventListener("click", () => {
+    closeGeoToolPanels();
+    const boundsLayers = [APP_STATE.overlays.Provincias, APP_STATE.overlays.Distritos]
+      .filter((layer) => layer && typeof layer.getBounds === "function");
+    const group = boundsLayers.length ? L.featureGroup(boundsLayers) : null;
+    const bounds = group?.getBounds();
+    if (bounds?.isValid()) map?.fitBounds(bounds, { padding: [24, 24], maxZoom: 10 });
+  });
+
+  document.querySelectorAll("[data-basemap]").forEach((button) => {
+    button.addEventListener("click", () => {
+      const selected = APP_STATE.baseLayers[button.dataset.basemap];
+      if (!selected || !map) return;
+      Object.values(APP_STATE.baseLayers).forEach((layer) => {
+        if (layer !== selected && map.hasLayer(layer)) map.removeLayer(layer);
+      });
+      selected.addTo(map);
+      document.querySelectorAll("[data-basemap]").forEach((option) => {
+        option.classList.toggle("is-active", option === button);
+      });
+      closeGeoToolPanels();
+    });
+  });
+
+  const syncInfoTotals = () => {
+    document.querySelectorAll("[data-stat-source]").forEach((target) => {
+      target.textContent = document.getElementById(target.dataset.statSource)?.textContent || "—";
+    });
+  };
+  syncInfoTotals();
+  const statistics = document.querySelector(".panel-statistics");
+  if (statistics) new MutationObserver(syncInfoTotals).observe(statistics, { childList: true, subtree: true, characterData: true });
+  const updateDate = document.getElementById("geoportal-update-date");
+  if (updateDate) updateDate.textContent = new Intl.DateTimeFormat("es-PE", { dateStyle: "long" }).format(new Date());
+
+  document.addEventListener("keydown", (event) => {
+    if (event.key === "Escape") closeGeoToolPanels({ restoreFocus: true });
+  });
+
+  new MutationObserver(() => {
+    if (document.body.classList.contains("project-detail-open")) closeGeoToolPanels();
+  }).observe(document.body, { attributes: true, attributeFilter: ["class"] });
 }
 
 const DASHBOARD_INTEGER_FORMAT = new Intl.NumberFormat("es-PE", { maximumFractionDigits: 0 });
@@ -528,6 +626,7 @@ function selectSmartSearchResult(item) {
   }
   document.getElementById("smart-project-search-clear")?.removeAttribute("hidden");
   openSelectedProjectPopup(item.feature);
+  closeGeoToolPanels();
 }
 
 function initSmartProjectSearch(featureCollection) {

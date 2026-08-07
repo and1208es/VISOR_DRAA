@@ -683,3 +683,141 @@
   .brand-subtitle { display: none; }
   .filter-actions { grid-template-columns: 1fr; }
 }
+
+/* UI 4.0 responsive */
+@media (min-width: 1025px) {
+  .sidebar.geo-tool-panel .offcanvas-header { display: flex; }
+}
+
+@media (max-width: 1024px) {
+  .sidebar.geo-tool-panel {
+    top: var(--header-height);
+    bottom: 0;
+    left: 0;
+    width: min(88vw, 340px);
+    max-width: 88vw;
+    border-width: 0 1px 0 0;
+    border-radius: 0 12px 12px 0;
+    transform: translateX(-100%);
+  }
+
+  .sidebar.geo-tool-panel.is-open { transform: translateX(0); }
+  .sidebar.geo-tool-panel .offcanvas-header { display: flex; }
+  .sidebar.geo-tool-panel .sidebar-content { height: calc(100% - 72px); padding: 12px 16px 24px; }
+
+  .geo-tool-backdrop {
+    position: absolute;
+    inset: 0;
+    z-index: 1020;
+    display: block;
+    padding: 0;
+    background: rgba(7, 29, 22, 0.24);
+    border: 0;
+  }
+
+  .geo-tool-backdrop[hidden] { display: none; }
+}
+
+@media (max-width: 767px) {
+  :root { --header-height: 58px; }
+  .topbar { max-height: 58px; }
+  .topbar .container-fluid { min-height: 58px; }
+
+  .geo-toolbar {
+    top: auto;
+    right: 12px;
+    bottom: 34px;
+    left: 12px;
+    display: grid;
+    width: auto;
+    max-width: calc(100% - 24px);
+    height: 56px;
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+    align-items: center;
+    padding: 2px 4px;
+    transform: none;
+  }
+
+  .geo-tool-separator { display: none; }
+  .geo-tool-button {
+    width: 100%;
+    min-width: 0;
+    height: 50px;
+    flex-direction: column;
+    gap: 2px;
+  }
+
+  .geo-tool-button svg { width: 19px; height: 19px; }
+  .geo-tool-label { display: block; max-width: 54px; overflow: hidden; font-size: 9.5px; font-weight: 600; line-height: 1; text-overflow: ellipsis; white-space: nowrap; }
+  .geo-tool-button.is-active::before { top: auto; right: 10px; bottom: -3px; left: 10px; width: auto; height: 3px; border-radius: 3px 3px 0 0; }
+
+  .tool-panel { order: 1; }
+  .tool-search { order: 2; }
+  .tool-layers { order: 3; }
+  .tool-home { order: 4; }
+  .geo-tool-more { display: inline-flex; order: 5; }
+  .geo-tool-mobile-more-item { display: none; }
+  .geo-toolbar.tools-expanded .geo-tool-mobile-more-item {
+    position: absolute;
+    bottom: 64px;
+    display: inline-flex;
+    background: #fff;
+    border: 1px solid #dde5e1;
+    box-shadow: 0 4px 12px rgba(9, 47, 36, 0.14);
+  }
+  .geo-toolbar.tools-expanded .tool-basemap { right: 0; }
+  .geo-toolbar.tools-expanded .tool-legend { right: 62px; }
+  .geo-toolbar.tools-expanded .tool-info { right: 124px; }
+
+  body.project-detail-open .geo-toolbar { display: none; }
+
+  .sidebar.geo-tool-panel,
+  .geo-map-panel {
+    top: auto;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    max-width: 100%;
+    height: auto;
+    max-height: 72vh;
+    padding: 16px;
+    border-width: 1px 0 0;
+    border-radius: 16px 16px 0 0;
+    transform: translateY(100%);
+  }
+
+  .sidebar.geo-tool-panel { padding: 0; }
+  .geo-map-panel { z-index: 1040; }
+
+  .sidebar.geo-tool-panel.is-open,
+  .geo-map-panel.is-open { transform: translateY(0); }
+  .sidebar.geo-tool-panel::before,
+  .geo-map-panel::before {
+    position: absolute;
+    top: 7px;
+    left: 50%;
+    width: 36px;
+    height: 4px;
+    content: "";
+    background: #b8c5bf;
+    border-radius: 999px;
+    transform: translateX(-50%);
+  }
+  .sidebar.geo-tool-panel .offcanvas-header { padding-top: 18px; }
+  .sidebar.geo-tool-panel .sidebar-content { height: auto; max-height: calc(72vh - 72px); }
+  .geo-map-panel-header { padding-top: 4px; }
+  .geo-compact-panel { width: 100%; }
+  .map-floating-title { display: none; }
+  body.project-detail-open .coord-control { display: none; }
+}
+
+@media (max-width: 390px) {
+  .geo-map-panel-header { margin-bottom: 8px; }
+  .geo-info-totals { grid-template-columns: 1fr; }
+  .geo-info-totals span:last-child { grid-column: auto; }
+}
+
+@media (max-width: 374px) {
+  .geo-tool-label { max-width: 50px; font-size: 9px; }
+}
