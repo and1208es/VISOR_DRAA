@@ -18,6 +18,7 @@ const BASE_MAPS = {
   },
   osm: "https://tiles.openfreemap.org/styles/bright",
 };
+const BASE_URL = import.meta.env.BASE_URL;
 const DATA_URLS = {
   provincias: `${BASE_URL}data/provincias.geojson`,
   distritos: `${BASE_URL}data/distritos.geojson`,
