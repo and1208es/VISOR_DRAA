@@ -3,6 +3,9 @@ import { Search, SlidersHorizontal, X, ChevronLeft, ChevronRight, Map, Layers3, 
 import { BarChart, Bar, XAxis, Tooltip, ResponsiveContainer } from 'recharts'
 import MapCanvas from './components/MapCanvas'
 import { Button } from './components/ui/button'
+import LOGO_URL from '../assets/img/logo_draa.jpg'
+
+const PROJECTS_URL = `${import.meta.env.BASE_URL}data/proyectos.geojson`
 
 const money = n => Number.isFinite(Number(n)) ? `S/ ${(Number(n) / 1000000).toFixed(1)} M` : 'No disponible'
 const formatCurrencyPEN = (value, maximumFractionDigits = 0) => Number.isFinite(Number(value)) ? new Intl.NumberFormat('es-PE',{style:'currency',currency:'PEN',minimumFractionDigits:maximumFractionDigits,maximumFractionDigits}).format(Number(value)) : 'No disponible'
@@ -48,7 +51,7 @@ function App() {
   const runMapAction = type => setMapAction({ type, at: Date.now() })
 
   useEffect(() => {
-    fetch('/data/proyectos.geojson').then(r => r.json()).then(data => {
+    fetch(PROJECTS_URL).then(r => r.json()).then(data => {
       const parsed = data.features.map(f => ({
         id:getProjectId(f), code:getProjectCode(f), name:getProjectName(f), province:getProjectProvince(f), district:getProjectDistrict(f), chain:getProjectChain(f),
         status:normalizeStatus(getProjectStatus(f)), budget:getProjectInvestment(f), beneficiaries:getProjectBeneficiaries(f), execution:normalizeProgress(getProjectProgress(f)),
@@ -124,7 +127,7 @@ function App() {
 
   return <div className="app-shell">
     <header className="topbar">
-      <div className="brand"><img src="/assets/img/logo_draa.jpg" /><div><strong>DRA Ayacucho</strong><span>Visor de Proyectos</span></div></div>
+      <div className="brand"><img src={LOGO_URL} /><div><strong>DRA Ayacucho</strong><span>Visor de Proyectos</span></div></div>
       <div className="header-search search-container" ref={searchRef} role="combobox" aria-expanded={isSearchOpen} aria-controls="project-search-results" aria-autocomplete="list"><Search size={18}/><input value={searchTerm} onFocus={() => searchTerm && setIsSearchOpen(true)} onKeyDown={handleSearchKeyDown} onChange={e => { setSearchTerm(e.target.value); setIsSearchOpen(Boolean(e.target.value)); setActiveSearchIndex(-1) }} placeholder="Buscar por nombre, CUI o ubicación..."/>{searchTerm && <button className="search-clear" aria-label="Limpiar búsqueda" onClick={() => { setSearchTerm(''); setIsSearchOpen(false); setActiveSearchIndex(-1) }}><X size={15}/></button>}{isSearchOpen && <div id="project-search-results" className="search-results" role="listbox"><small>Resultados dentro de los filtros actuales</small>{rankSearchResults.map((project,index) => <button className={`search-result-item ${index === activeSearchIndex ? 'active' : ''}`} key={project.id} role="option" aria-selected={index === activeSearchIndex} onMouseDown={event => event.preventDefault()} onClick={() => selectProjectFromSearch(project)}><b>{safeValue(projectName(project))}</b><span>PROY-{String(projectCode(project)).padStart(4,'0')} · {safeValue(projectDistrict(project))}, {safeValue(projectProvince(project))}</span><em>{safeValue(projectChain(project))} · {safeValue(projectStatus(project))}</em></button>)}{!rankSearchResults.length && <div className="search-empty">Sin resultados en los filtros actuales{allProjectMatches.length > 0 && <button onClick={() => selectProjectFromSearch(allProjectMatches[0])}>Buscar en todos los proyectos</button>}</div>}</div>}</div>
       <div className="header-actions"><span className="update"><i/>Datos actualizados <b>Jul 2026</b></span><button className="icon-btn"><Info size={19}/></button><button className="menu-btn" aria-label="Alternar filtros" aria-controls="filters-panel" aria-expanded={isFiltersOpen} onClick={() => setIsFiltersOpen(current => !current)}><Menu/></button><button className="user"><span>GP</span><div><b>Gestión de Proyectos</b><small>Administrador</small></div></button></div>
     </header>
@@ -179,7 +182,7 @@ function App() {
       </aside>
       <section className="project-print-sheet" aria-label="Ficha técnica imprimible del proyecto">
         <header className="print-sheet-header">
-          <img src="/assets/img/logo_draa.jpg" alt="Logo de la Dirección Regional Agraria Ayacucho"/>
+          <img src={LOGO_URL} alt="Logo de la Dirección Regional Agraria Ayacucho"/>
           <div className="print-institution"><strong>DIRECCIÓN REGIONAL DE AGRICULTURA AYACUCHO</strong><span>Visor de Proyectos</span></div>
           <div className="print-document-title"><h1>FICHA TÉCNICA DE PROYECTO</h1><p><b>Código:</b> {selected.code === selected.id ? `PROY-${String(selected.id).padStart(4,'0')}` : safeValue(selected.code)}</p><p><b>Generada:</b> {new Intl.DateTimeFormat('es-PE',{dateStyle:'long',timeStyle:'short'}).format(new Date())}</p></div>
         </header>

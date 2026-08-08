@@ -24,6 +24,11 @@ const DATA_URLS = {
   distritos: `${BASE_URL}data/distritos.geojson`,
   proyectos: `${BASE_URL}data/proyectos.geojson`,
 };
+console.info("BASE_URL:", import.meta.env.BASE_URL);
+console.info("URL provincias:", DATA_URLS.provincias);
+console.info("URL distritos:", DATA_URLS.distritos);
+console.info("URL proyectos:", DATA_URLS.proyectos);
+console.info("DATA_URLS producción:", DATA_URLS);
 const SOURCE_IDS = { provinces: "provinces-source", districts: "districts-source", projects: "projects-source" };
 const LAYER_IDS = {
   provincesFill: "provinces-fill", provincesLine: "provinces-line",
@@ -35,9 +40,12 @@ const LAYER_IDS = {
 const SOURCE = SOURCE_IDS;
 const LAYER = LAYER_IDS;
 
-async function fetchGeoJSON(url) {
-  const response = await fetch(url);
-  if (!response.ok) throw new Error(`${url}: ${response.status} ${response.statusText}`);
+async function fetchGeoJSON(url, signal) {
+  if (!url || typeof url !== "string") throw new Error(`URL GeoJSON inválida: ${String(url)}`);
+  console.info("Cargando GeoJSON:", url);
+  const response = await fetch(url, { signal });
+  console.info("Respuesta GeoJSON:", url, response.status, response.ok);
+  if (!response.ok) throw new Error(`No se pudo cargar GeoJSON: ${url} (${response.status} ${response.statusText})`);
   const data = await response.json();
   if (data?.type !== "FeatureCollection") throw new Error(`${url} no contiene un FeatureCollection válido`);
   return data;
@@ -144,37 +152,49 @@ function softenBaseStyle(map) {
   });
 }
 
+function runMapOperation(label, operation, optional = false) {
+  console.info(`Añadiendo ${label}`);
+  try {
+    operation();
+    console.info(`${label} OK`);
+    return true;
+  } catch (error) {
+    const logger = optional ? console.warn : console.error;
+    logger(`Falló ${label}:`, error);
+    if (!optional) throw new Error(`Falló ${label}: ${error?.message || error}`, { cause: error });
+    return false;
+  }
+}
+
 function addTerritorialLayers(map, provinces, districts) {
-  if (!map.getSource(SOURCE.provinces)) map.addSource(SOURCE.provinces, { type: "geojson", data: provinces, generateId: true });
-  if (!map.getLayer(LAYER.provincesFill)) map.addLayer({ id: LAYER.provincesFill, type: "fill", source: SOURCE.provinces, paint: { "fill-color": "#0f5132", "fill-opacity": 0.05, "fill-antialias": true } });
-  if (!map.getLayer(LAYER.provincesHalo)) map.addLayer({ id: LAYER.provincesHalo, type: "line", source: SOURCE.provinces, paint: { "line-color": "#ffffff", "line-width": 3.2, "line-opacity": 0.72, "line-blur": 0.35 } });
-  if (!map.getLayer(LAYER.provincesLine)) map.addLayer({ id: LAYER.provincesLine, type: "line", source: SOURCE.provinces, paint: { "line-color": "#16856f", "line-width": 1.25, "line-opacity": 0.92 } });
-  if (!map.getSource(SOURCE.districts)) map.addSource(SOURCE.districts, { type: "geojson", data: districts, generateId: true });
-  if (!map.getLayer(LAYER.districtsFill)) map.addLayer({ id: LAYER.districtsFill, type: "fill", source: SOURCE.districts, paint: { "fill-color": "#d99a2b", "fill-opacity": 0 } });
-  if (!map.getLayer(LAYER.districtsHalo)) map.addLayer({ id: LAYER.districtsHalo, type: "line", source: SOURCE.districts, paint: { "line-color": "#ffffff", "line-width": 1.4, "line-opacity": 0.58, "line-blur": 0.25 } });
-  if (!map.getLayer(LAYER.districtsLine)) map.addLayer({ id: LAYER.districtsLine, type: "line", source: SOURCE.districts, paint: { "line-color": "#2a9d8f", "line-width": 0.45, "line-opacity": 0.55 } });
+  if (!map.getSource(SOURCE.provinces)) runMapOperation(SOURCE.provinces, () => map.addSource(SOURCE.provinces, { type: "geojson", data: provinces, generateId: true }));
+  if (!map.getLayer(LAYER.provincesFill)) runMapOperation(LAYER.provincesFill, () => map.addLayer({ id: LAYER.provincesFill, type: "fill", source: SOURCE.provinces, paint: { "fill-color": "#0f5132", "fill-opacity": 0.05, "fill-antialias": true } }));
+  if (!map.getLayer(LAYER.provincesHalo)) runMapOperation(LAYER.provincesHalo, () => map.addLayer({ id: LAYER.provincesHalo, type: "line", source: SOURCE.provinces, paint: { "line-color": "#ffffff", "line-width": 3.2, "line-opacity": 0.72, "line-blur": 0.35 } }));
+  if (!map.getLayer(LAYER.provincesLine)) runMapOperation(LAYER.provincesLine, () => map.addLayer({ id: LAYER.provincesLine, type: "line", source: SOURCE.provinces, paint: { "line-color": "#16856f", "line-width": 1.25, "line-opacity": 0.92 } }));
+  if (!map.getSource(SOURCE.districts)) runMapOperation(SOURCE.districts, () => map.addSource(SOURCE.districts, { type: "geojson", data: districts, generateId: true }));
+  if (!map.getLayer(LAYER.districtsFill)) runMapOperation(LAYER.districtsFill, () => map.addLayer({ id: LAYER.districtsFill, type: "fill", source: SOURCE.districts, paint: { "fill-color": "#d99a2b", "fill-opacity": 0 } }));
+  if (!map.getLayer(LAYER.districtsHalo)) runMapOperation(LAYER.districtsHalo, () => map.addLayer({ id: LAYER.districtsHalo, type: "line", source: SOURCE.districts, paint: { "line-color": "#ffffff", "line-width": 1.4, "line-opacity": 0.58, "line-blur": 0.25 } }));
+  if (!map.getLayer(LAYER.districtsLine)) runMapOperation(LAYER.districtsLine, () => map.addLayer({ id: LAYER.districtsLine, type: "line", source: SOURCE.districts, paint: { "line-color": "#2a9d8f", "line-width": 0.45, "line-opacity": 0.55 } }));
 }
 
 function addProjectLayers(map, originalData, projects) {
   const data = filterProjectFeatures(originalData, projects);
-  if (!map.getSource(SOURCE.projects)) map.addSource(SOURCE.projects, { type: "geojson", data, cluster: true, clusterMaxZoom: 12, clusterRadius: 48, generateId: true });
-  if (!map.getLayer(LAYER.clusters)) map.addLayer({ id: LAYER.clusters, type: "circle", source: SOURCE.projects, filter: ["has", "point_count"], paint: {
+  if (!map.getSource(SOURCE.projects)) runMapOperation(SOURCE.projects, () => map.addSource(SOURCE.projects, { type: "geojson", data, cluster: true, clusterMaxZoom: 12, clusterRadius: 48, generateId: true }));
+  if (!map.getLayer(LAYER.clusters)) runMapOperation(LAYER.clusters, () => map.addLayer({ id: LAYER.clusters, type: "circle", source: SOURCE.projects, filter: ["has", "point_count"], paint: {
     "circle-color": "#0f5132", "circle-radius": ["case", ["boolean", ["feature-state", "hover"], false], ["step", ["get", "point_count"], 22, 10, 27, 30, 33], ["step", ["get", "point_count"], 19, 10, 24, 30, 30]],
     "circle-stroke-width": 3, "circle-stroke-color": "#ffffff",
-  } });
+  } }));
   if (styleSupportsGlyphs(map)) {
     if (!map.getLayer(LAYER.clusterCount)) {
-      try {
-        map.addLayer({ id: LAYER.clusterCount, type: "symbol", source: SOURCE.projects, filter: ["has", "point_count"], layout: { "text-field": ["get", "point_count_abbreviated"], "text-size": 12 }, paint: { "text-color": "#ffffff" } });
-      } catch (error) { console.warn("No se pudo añadir la etiqueta de clúster:", error); }
+      runMapOperation(LAYER.clusterCount, () => map.addLayer({ id: LAYER.clusterCount, type: "symbol", source: SOURCE.projects, filter: ["has", "point_count"], layout: { "text-field": ["get", "point_count_abbreviated"], "text-size": 12 }, paint: { "text-color": "#ffffff" } }), true);
     }
   } else {
     console.warn("El mapa base no define glyphs; se muestran clústeres sin etiqueta.");
   }
-  if (!map.getLayer(LAYER.points)) map.addLayer({ id: LAYER.points, type: "circle", source: SOURCE.projects, filter: ["!", ["has", "point_count"]], paint: {
+  if (!map.getLayer(LAYER.points)) runMapOperation(LAYER.points, () => map.addLayer({ id: LAYER.points, type: "circle", source: SOURCE.projects, filter: ["!", ["has", "point_count"]], paint: {
     "circle-radius": ["case", ["boolean", ["feature-state", "hover"], false], 11, 8.5], "circle-color": ["match", ["get", "estado"], "Planificado", "#d99a2b", "Finalizado", "#8aa7b3", "#1f9d68"], "circle-stroke-width": 2.5, "circle-stroke-color": "#ffffff",
-  } });
-  if (!map.getLayer(LAYER.selected)) map.addLayer({ id: LAYER.selected, type: "circle", source: SOURCE.projects, filter: ["==", ["to-string", ["get", "id"]], ""], paint: { "circle-radius": 14, "circle-color": "rgba(255,255,255,0)", "circle-stroke-width": 3, "circle-stroke-color": "#0f5132" } });
+  } }));
+  if (!map.getLayer(LAYER.selected)) runMapOperation(LAYER.selected, () => map.addLayer({ id: LAYER.selected, type: "circle", source: SOURCE.projects, filter: ["==", ["to-string", ["get", "id"]], ""], paint: { "circle-radius": 14, "circle-color": "rgba(255,255,255,0)", "circle-stroke-width": 3, "circle-stroke-color": "#0f5132" } }));
 }
 
 export function fitMapToGeometry(map, geometry, options = {}) {
@@ -305,9 +325,12 @@ export default function MapCanvas({ projects, selectedId, onSelect, selectedProv
     const performRestore = async () => {
       await waitForStyleReady(map);
       softenBaseStyle(map);
-      provincesDataRef.current ||= enrichProvinces(await fetchGeoJSON(DATA_URLS.provinces));
-      districtsDataRef.current ||= enrichDistricts(await fetchGeoJSON(DATA_URLS.districts));
-      projectsDataRef.current ||= await fetchGeoJSON(DATA_URLS.projects);
+      provincesDataRef.current ||= enrichProvinces(await fetchGeoJSON(DATA_URLS.provincias));
+      console.info("Provincias:", provincesDataRef.current.features.length);
+      districtsDataRef.current ||= enrichDistricts(await fetchGeoJSON(DATA_URLS.distritos));
+      console.info("Distritos:", districtsDataRef.current.features.length);
+      projectsDataRef.current ||= await fetchGeoJSON(DATA_URLS.proyectos);
+      console.info("Proyectos:", projectsDataRef.current.features.length);
       addTerritorialLayers(map, provincesDataRef.current, districtsDataRef.current);
       addProjectLayers(map, projectsDataRef.current, projectsRef.current);
       const projectSource = map.getSource(SOURCE.projects);
@@ -317,10 +340,12 @@ export default function MapCanvas({ projects, selectedId, onSelect, selectedProv
       [LAYER.provincesFill, LAYER.provincesHalo, LAYER.provincesLine, LAYER.districtsFill, LAYER.districtsHalo, LAYER.districtsLine, LAYER.clusters, LAYER.clusterCount, LAYER.points, LAYER.selected].forEach((id) => { if (map.getLayer(id)) map.moveLayer(id); });
       const restored = {
         provincesSource: Boolean(map.getSource(SOURCE.provinces)), districtsSource: Boolean(map.getSource(SOURCE.districts)), projectsSource: Boolean(map.getSource(SOURCE.projects)),
-        provincesFill: Boolean(map.getLayer(LAYER.provincesFill)), provincesHalo: Boolean(map.getLayer(LAYER.provincesHalo)), districtsFill: Boolean(map.getLayer(LAYER.districtsFill)), districtsHalo: Boolean(map.getLayer(LAYER.districtsHalo)), districtsLine: Boolean(map.getLayer(LAYER.districtsLine)),
-        projectClusters: Boolean(map.getLayer(LAYER.clusters)), clusterCount: !styleSupportsGlyphs(map) || Boolean(map.getLayer(LAYER.clusterCount)), projectPoints: Boolean(map.getLayer(LAYER.points)),
+        provincesFill: Boolean(map.getLayer(LAYER.provincesFill)), provincesLine: Boolean(map.getLayer(LAYER.provincesLine)),
+        districtsFill: Boolean(map.getLayer(LAYER.districtsFill)), districtsLine: Boolean(map.getLayer(LAYER.districtsLine)),
+        projectClusters: Boolean(map.getLayer(LAYER.clusters)), projectPoints: Boolean(map.getLayer(LAYER.points)),
       };
       console.info("Estado de capas restauradas", restored);
+      console.info("project-cluster-count (opcional):", Boolean(map.getLayer(LAYER.clusterCount)));
       if (Object.values(restored).some((value) => !value)) throw new Error("La restauración terminó con fuentes o capas personalizadas ausentes");
       requestAnimationFrame(() => { if (mapRef.current === map) focusSelectedTerritory(map); });
     };
@@ -392,7 +417,7 @@ export default function MapCanvas({ projects, selectedId, onSelect, selectedProv
         if (!disposed) {
           mapReadyRef.current = false;
           setIsMapLoading(false);
-          setMapError("No fue posible restaurar las capas del visor.");
+          setMapError(error?.message || "Falló una operación no identificada al restaurar las capas del visor.");
         }
       }
     };
